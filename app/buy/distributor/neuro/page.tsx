@@ -5,9 +5,50 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/lib/cartContext";
+import { useRouter } from "next/navigation";
 
 export default function DistributorNeuroPage() {
   const [packageSize, setPackageSize] = useState("10-pack");
+  const { addToCart } = useCart();
+  const router = useRouter();
+
+  const handleAddToCart = () => {
+    // Get price per unit and total based on selected package size
+    let pricePerUnit, total;
+    switch (packageSize) {
+      case "10-pack":
+        pricePerUnit = 69.9;
+        total = 699;
+        break;
+      case "30-pack":
+        pricePerUnit = 66.9;
+        total = 2007;
+        break;
+      case "60-pack":
+        pricePerUnit = 64.9;
+        total = 3894;
+        break;
+      default:
+        pricePerUnit = 69.9;
+        total = 699;
+    }
+
+    // Create the item object based on selected package size
+    const item = {
+      id: `neuro-distributor-${packageSize}`,
+      name: "Vitalis Neuro (Distributor)",
+      description: `${packageSize} package`,
+      price: total,
+      quantity: 1,
+      image: "/placeholder.svg?height=80&width=80",
+      type: `Distributor ${packageSize} ($${pricePerUnit.toFixed(2)} per unit)`,
+    };
+
+    // Add to cart and navigate to cart page
+    addToCart(item);
+    router.push("/cart");
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -246,17 +287,15 @@ export default function DistributorNeuroPage() {
 
             {/* Add to Cart Button */}
             <div className="mt-8">
-              <Button asChild>
-                <Link
-                  href="/checkout"
-                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white py-6 flex items-center justify-center"
-                >
-                  Add to Cart{" "}
-                  <span className="ml-2">
-                    <ArrowRight size={20} />
-                  </span>
-                </Link>
-              </Button>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-emerald-800 hover:bg-emerald-900 text-white py-6 px-4 rounded-md flex items-center justify-center"
+              >
+                Add to Cart{" "}
+                <span className="ml-2">
+                  <ArrowRight size={20} />
+                </span>
+              </button>
               <p className="text-center text-xs text-gray-500 mt-4">
                 By proceeding, you agree to our Terms of Service, Privacy
                 Policy, and Distributor Agreement.

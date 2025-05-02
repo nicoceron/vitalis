@@ -53,3 +53,31 @@ npm run build
 ```
 
 And then deployed to any hosting platform that supports Next.js applications.
+
+## Cart and Checkout Flow
+
+The shopping experience is designed with a clear separation between cart and checkout:
+
+### Cart Flow (/cart)
+
+- The cart page shows all items added by the user
+- Users can modify quantities or remove items
+- Displays subtotal, shipping costs, and order total
+- "Continue Shopping" button takes users back to the product listings
+- "Proceed to Checkout" button advances to the checkout process
+
+### Checkout Flow (/checkout)
+
+- A streamlined two-step process:
+  1. Shipping information and method selection
+  2. Payment method and details
+- Each step shows a summary of the cart items (read-only)
+- Progress indicator shows the current step in the process
+- "Edit Cart" link allows users to return to the cart if needed
+- Confirmation page is shown after successful purchase
+
+## Navigation
+
+- The cart icon in the site header always links to the /cart page
+- The checkout page is only accessible after viewing the cart
+- Users can move back and forth between cart and checkout as needed

@@ -5,9 +5,34 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/lib/cartContext";
+import { useRouter } from "next/navigation";
 
 export default function VisionProductPage() {
   const [purchaseOption, setPurchaseOption] = useState("one-time");
+  const { addToCart } = useCart();
+  const router = useRouter();
+
+  const handleAddToCart = () => {
+    // Create the item object based on selected purchase option
+    const item = {
+      id:
+        "vision-" + (purchaseOption === "one-time" ? "single" : "subscription"),
+      name: "Vitalis Vision",
+      description: "30-day supply",
+      price: purchaseOption === "one-time" ? 79 : 67,
+      quantity: 1,
+      image: "/placeholder.svg?height=80&width=80",
+      type:
+        purchaseOption === "one-time"
+          ? "One-time purchase"
+          : "Monthly Subscription",
+    };
+
+    // Add to cart and navigate to cart page
+    addToCart(item);
+    router.push("/cart");
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -220,19 +245,17 @@ export default function VisionProductPage() {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
+            {/* Add to Cart Button - Updated */}
             <div className="mt-8">
-              <Button asChild>
-                <Link
-                  href="/checkout"
-                  className="w-full bg-emerald-800 hover:bg-emerald-900 text-white py-6 flex items-center justify-center"
-                >
-                  Add to Cart{" "}
-                  <span className="ml-2">
-                    <ArrowRight size={20} />
-                  </span>
-                </Link>
-              </Button>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-emerald-800 hover:bg-emerald-900 text-white py-6 px-4 rounded-md flex items-center justify-center"
+              >
+                Add to Cart{" "}
+                <span className="ml-2">
+                  <ArrowRight size={20} />
+                </span>
+              </button>
               <p className="text-center text-xs text-gray-500 mt-4">
                 By proceeding, you agree to our Terms of Service and Privacy
                 Policy.
