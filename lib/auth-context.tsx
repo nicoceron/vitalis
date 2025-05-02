@@ -14,6 +14,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  isAdmin: boolean;
 };
 
 type AuthContextType = {
@@ -23,6 +24,7 @@ type AuthContextType = {
   subscriptions: Subscription[];
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  adminLogin: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 };
 
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: `user_${Math.random().toString(36).substring(2, 9)}`,
         name: email.split("@")[0],
         email,
+        isAdmin: false,
       };
 
       // Store user in state and localStorage
@@ -129,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: `user_${Math.random().toString(36).substring(2, 9)}`,
         name,
         email,
+        isAdmin: false,
       };
 
       // Store user in state and localStorage
@@ -145,6 +149,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error("Registration error:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const adminLogin = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Simple validation
+      if (!email.includes("@")) {
+        return false;
+      }
+
+      // Create admin user
+      const adminUser = {
+        id: `admin_${Math.random().toString(36).substring(2, 9)}`,
+        name: `Admin ${email.split("@")[0]}`,
+        email,
+        isAdmin: true,
+      };
+
+      // Store user in state and localStorage
+      setUser(adminUser);
+      localStorage.setItem("vitalis_user", JSON.stringify(adminUser));
+
+      // Set mock orders and subscriptions
+      const mockOrders = getMockOrders(adminUser.id);
+      const mockSubscriptions = getMockSubscriptions(adminUser.id);
+      setOrders(mockOrders);
+      setSubscriptions(mockSubscriptions);
+
+      // Notify components about auth change
+      notifyAuthChange();
+
+      return true;
+    } catch (error) {
+      console.error("Admin login error:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -170,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscriptions,
         login,
         register,
+        adminLogin,
         logout,
       }}
     >

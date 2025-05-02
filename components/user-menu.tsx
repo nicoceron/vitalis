@@ -111,6 +111,15 @@ export function UserMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
           <div className="py-2">
+            {user.isAdmin && (
+              <Link
+                href="/admin"
+                className="block px-4 py-2 text-sm hover:bg-gray-100 text-emerald-700 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
             <Link
               href="/account/subscriptions"
               className="block px-4 py-2 text-sm hover:bg-gray-100"

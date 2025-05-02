@@ -4,9 +4,11 @@ import Link from "next/link";
 import { UserMenu } from "@/components/user-menu";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cartContext";
+import { useAuth } from "@/lib/auth-context";
 
 export function SiteHeader() {
   const { itemCount } = useCart();
+  const { user } = useAuth();
 
   return (
     <header className="border-b bg-white">
@@ -17,7 +19,7 @@ export function SiteHeader() {
         </Link>
         <nav className="hidden md:flex gap-6 items-center">
           <Link
-            href="#"
+            href="/about"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
             About Vitalis
@@ -34,6 +36,14 @@ export function SiteHeader() {
           >
             Research
           </Link>
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-emerald-700 hover:underline underline-offset-4"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
         <div className="flex items-center gap-4">
           <Link href="/cart" className="relative">
