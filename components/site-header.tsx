@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { UserMenu } from "@/components/user-menu"
+import Link from "next/link";
+import { UserMenu } from "@/components/user-menu";
 
 export function SiteHeader() {
   return (
@@ -10,21 +10,27 @@ export function SiteHeader() {
           <span className="text-xs align-top">®</span>
         </Link>
         <nav className="hidden md:flex gap-6 items-center">
-          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">
+          <Link
+            href="#"
+            className="text-sm font-medium hover:underline underline-offset-4"
+          >
             About Vitalis
           </Link>
-          <Link href="/ingredients" className="text-sm font-medium hover:underline underline-offset-4">
+          <Link
+            href="/ingredients"
+            className="text-sm font-medium hover:underline underline-offset-4"
+          >
             Ingredients
           </Link>
-          <Link href="/research" className="text-sm font-medium hover:underline underline-offset-4">
+          <Link
+            href="/research"
+            className="text-sm font-medium hover:underline underline-offset-4"
+          >
             Research
-          </Link>
-          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">
-            Learn More
           </Link>
         </nav>
         <UserMenu />
       </div>
     </header>
-  )
+  );
 }
