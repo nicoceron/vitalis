@@ -20,7 +20,6 @@ export async function getAdminDashboardStats() {
     console.error('Dashboard error:', userError || subError || paymentError);
     return null;
   }
-
   const totalUsers = users.length;
   const adminUsers = users.filter((u) => u.is_admin === true).length;
   const standardUsers = totalUsers - adminUsers;
@@ -42,10 +41,10 @@ export async function getAdminDashboardStats() {
 }
 
 export async function getRecentUsers(limit = 10) {
-  const { data, error } = await supabase
+  const { data: users, error } = await supabase
     .from('user_account')
-    .select('id, full_name, is_admin')
-    .order('id', { ascending: false }) // Or by creation time if available
+    .select('id, full_name, is_admin, email, created_at')
+    .order('created_at', { ascending: false }) // Sort by actual join date
     .limit(limit);
 
   if (error) {
@@ -53,11 +52,11 @@ export async function getRecentUsers(limit = 10) {
     return [];
   }
 
-  return data.map((user) => ({
+  return users.map((user) => ({
     id: user.id,
     name: user.full_name,
-    email: `no-email@supabase.com`, // Placeholder since no email in user_account
-    joinDate: new Date(), // Replace with actual timestamp if you add one
+    email: user.email || 'unknown',
+    joinDate: new Date(user.created_at),
     isAdmin: user.is_admin === true,
   }));
 }
@@ -66,7 +65,8 @@ export async function getRecentSubscriptions(limit = 10) {
   try {
     const { data, error } = await supabase
       .from('subscription')
-      .select(`
+      .select(
+        `
         id,
         user_id,
         address_id,
@@ -77,7 +77,8 @@ export async function getRecentSubscriptions(limit = 10) {
         created_at,
         plan_type,
         product_type
-      `)
+      `
+      )
       .order('created_at', { ascending: false })
       .limit(limit);
 

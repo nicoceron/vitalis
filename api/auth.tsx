@@ -45,9 +45,12 @@ export async function loginUser(email: string, password: string) {
       return { success: false, error: loginError.message };
     }
 
-    const userId = authData.user.id;
+    const user = authData.user;
+    const userId = user.id;
 
-    // tep 1: Check if user_account exists (and fetch full row)
+    console.log('Logging in with Supabase user ID:', userId);
+
+    // Step 1: Check if user_account exists
     const { data: userAccount, error: fetchError } = await supabase
       .from('user_account')
       .select('*')
@@ -59,18 +62,21 @@ export async function loginUser(email: string, password: string) {
       return { success: false, error: fetchError.message };
     }
 
-    // Step 2: If not found, insert a new row
+    // Step 2: If not found, insert a new row with full metadata
     if (!userAccount) {
       const { data: newUserAccount, error: insertError } = await supabase
         .from('user_account')
         .insert([
           {
             id: userId,
-            full_name: authData.user.user_metadata.full_name,
+            full_name: user.user_metadata?.full_name ?? '',
+            email: user.email,
+            created_at: user.created_at,
+            last_sign_in_at: user.last_sign_in_at,
           },
         ])
         .select()
-        .single(); // 🧠 fetch the new inserted row
+        .single();
 
       if (insertError) {
         console.error(
@@ -80,11 +86,10 @@ export async function loginUser(email: string, password: string) {
         return { success: false, error: insertError.message };
       }
 
-      // Return both auth and user_account data
       return {
         success: true,
         data: {
-          authUser: authData.user,
+          authUser: user,
           userAccount: newUserAccount,
         },
       };
@@ -94,7 +99,7 @@ export async function loginUser(email: string, password: string) {
     return {
       success: true,
       data: {
-        authUser: authData.user,
+        authUser: user,
         userAccount,
       },
     };
