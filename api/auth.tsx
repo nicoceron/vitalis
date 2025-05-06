@@ -47,29 +47,30 @@ export async function loginUser(email: string, password: string) {
 
     const userId = authData.user.id;
 
-    // Check if user_account already exists
-    const { data: existingUser, error: fetchError } = await supabase
+    // tep 1: Check if user_account exists (and fetch full row)
+    const { data: userAccount, error: fetchError } = await supabase
       .from('user_account')
-      .select('id')
+      .select('*')
       .eq('id', userId)
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-      // PGRST116 = no rows found (that’s OK — it means it’s a new user)
       console.error('Error checking user_account:', fetchError.message);
       return { success: false, error: fetchError.message };
     }
 
-    if (!existingUser) {
-      // 🆕 ZInsert only if user_account doesn't exist
-      const { error: insertError } = await supabase
+    // Step 2: If not found, insert a new row
+    if (!userAccount) {
+      const { data: newUserAccount, error: insertError } = await supabase
         .from('user_account')
         .insert([
           {
             id: userId,
             full_name: authData.user.user_metadata.full_name,
           },
-        ]);
+        ])
+        .select()
+        .single(); // 🧠 fetch the new inserted row
 
       if (insertError) {
         console.error(
@@ -78,9 +79,25 @@ export async function loginUser(email: string, password: string) {
         );
         return { success: false, error: insertError.message };
       }
+
+      // Return both auth and user_account data
+      return {
+        success: true,
+        data: {
+          authUser: authData.user,
+          userAccount: newUserAccount,
+        },
+      };
     }
 
-    return { success: true, data: authData };
+    // Step 3: If user_account exists, return it
+    return {
+      success: true,
+      data: {
+        authUser: authData.user,
+        userAccount,
+      },
+    };
   } catch (err) {
     console.error('Unexpected error during login:', err);
     return { success: false, error: 'Unexpected error occurred' };
