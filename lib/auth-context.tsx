@@ -35,7 +35,6 @@ type AuthContextType = {
     email: string,
     password: string
   ) => Promise<AuthResult>;
-  adminLogin: (email: string, password: string) => Promise<AuthResult>;
   logout: () => void;
 };
 
@@ -164,48 +163,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const adminLogin = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Simple validation
-      if (!email.includes('@')) {
-        return false;
-      }
-
-      // Create admin user
-      const adminUser = {
-        id: `admin_${Math.random().toString(36).substring(2, 9)}`,
-        name: `Admin ${email.split('@')[0]}`,
-        email,
-        isAdmin: true,
-      };
-
-      // Store user in state and localStorage
-      setUser(adminUser);
-      localStorage.setItem('vitalis_user', JSON.stringify(adminUser));
-
-      // Set mock orders and subscriptions
-      const mockOrders = getMockOrders(adminUser.id);
-      const mockSubscriptions = getMockSubscriptions(adminUser.id);
-      setOrders(mockOrders);
-      setSubscriptions(mockSubscriptions);
-
-      // Notify components about auth change
-      notifyAuthChange();
-
-      return true;
-    } catch (error) {
-      console.error('Admin login error:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const logout = () => {
     setUser(null);
     setOrders([]);
@@ -225,7 +182,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscriptions,
         login,
         register,
-        adminLogin,
         logout,
       }}
     >
