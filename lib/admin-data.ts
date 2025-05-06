@@ -1,249 +1,92 @@
-// Mock data for admin dashboard
+// import { supabase } from './apiClient';
 
-// Dashboard overview stats
-export function getAdminDashboardStats() {
-  return {
-    totalUsers: 2473,
-    standardUsers: 2459,
-    adminUsers: 14,
-    totalSales: 18934,
-    revenue: 1249650.75,
-    activeSubscriptions: 983,
-    averageOrderValue: 65.99,
-  };
-}
+// export async function getAdminDashboardStats() {
+//   try {
+//     const [
+//       { count: totalUsers },
+//       { count: adminUsers },
+//       { count: totalSales },
+//       revenueData,
+//       { count: activeSubscriptions },
+//     ] = await Promise.all([
+//       supabase.from('user_account').select('*', { count: 'exact', head: true }),
+//       supabase
+//         .from('user_account')
+//         .select('*', { count: 'exact', head: true })
+//         .eq('is_admin', true),
+//       supabase.from('payment').select('*', { count: 'exact', head: true }),
+//       supabase.from('payment').select('amount'),
+//       supabase
+//         .from('subscription')
+//         .select('*', { count: 'exact', head: true })
+//         .eq('status', 'active'),
+//     ]);
 
-// Recent users
-export function getRecentUsers(limit = 10) {
-  const users = [];
+//     const revenue =
+//       revenueData?.data?.reduce(
+//         (acc: number, row: any) => acc + parseFloat(row.amount || 0),
+//         0
+//       ) || 0;
 
-  for (let i = 0; i < limit; i++) {
-    users.push({
-      id: `user_${Math.random().toString(36).substring(2, 7)}`,
-      name: `${getRandomName()} ${getRandomLastName()}`,
-      email: `${getRandomName().toLowerCase()}${Math.floor(
-        Math.random() * 1000
-      )}@example.com`,
-      joinDate: getRandomDate(new Date(2023, 0, 1), new Date()),
-      isAdmin: Math.random() < 0.05, // 5% chance of being admin
-    });
+//     const averageOrderValue = revenue / (totalSales || 1);
+
+//     return {
+//       totalUsers: totalUsers || 0,
+//       standardUsers: (totalUsers || 0) - (adminUsers || 0),
+//       adminUsers: adminUsers || 0,
+//       totalSales: totalSales || 0,
+//       revenue,
+//       activeSubscriptions: activeSubscriptions || 0,
+//       averageOrderValue: parseFloat(averageOrderValue.toFixed(2)),
+//     };
+//   } catch (error) {
+//     console.error('Error fetching admin stats:', error);
+//     return null;
+//   }
+// }
+
+export async function getRecentUsers(limit = 10) {
+  try {
+    const { data, error } = await supabase
+      .from('user_account')
+      .select('id, full_name, is_admin, created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return data?.map((user) => ({
+      id: user.id,
+      name: user.full_name,
+      email: '', // if you want to show it, you'll need to join with auth.users
+      joinDate: user.created_at,
+      isAdmin: user.is_admin,
+    }));
+  } catch (err) {
+    console.error('Error fetching recent users:', err);
+    return [];
   }
-
-  return users.sort((a, b) => b.joinDate.getTime() - a.joinDate.getTime());
 }
 
-// Recent orders
-export function getRecentOrders(limit = 10) {
-  const orders = [];
-  const products = [
-    { name: "Vitalis Vision", price: 79 },
-    { name: "Vitalis Neuro", price: 89 },
-    { name: "Vitalis Fortify", price: 85 },
-    { name: "Complete Bundle", price: 199 },
-  ];
+export async function getRecentOrders(limit = 10) {
+  try {
+    const { data, error } = await supabase
+      .from('payment')
+      .select('*, subscription(id, user_id)')
+      .order('payment_date', { ascending: false })
+      .limit(limit);
 
-  for (let i = 0; i < limit; i++) {
-    const numItems = Math.floor(Math.random() * 3) + 1;
-    const selectedProducts = [];
-    let subtotal = 0;
+    if (error) throw error;
 
-    for (let j = 0; j < numItems; j++) {
-      const product = products[Math.floor(Math.random() * products.length)];
-      const quantity = Math.floor(Math.random() * 2) + 1;
-      subtotal += product.price * quantity;
-
-      selectedProducts.push({
-        ...product,
-        quantity,
-        total: product.price * quantity,
-      });
-    }
-
-    const shipping = subtotal >= 100 ? 0 : 5.95;
-    const tax = Math.round(subtotal * 0.08 * 100) / 100;
-    const total = subtotal + shipping + tax;
-
-    orders.push({
-      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      customerName: `${getRandomName()} ${getRandomLastName()}`,
-      customerEmail: `${getRandomName().toLowerCase()}${Math.floor(
-        Math.random() * 1000
-      )}@example.com`,
-      date: getRandomDate(new Date(2023, 0, 1), new Date()),
-      products: selectedProducts,
-      subtotal,
-      shipping,
-      tax,
-      total,
-      status: getRandomOrderStatus(),
-    });
+    return data?.map((order) => ({
+      id: order.transaction_id || order.id,
+      customerId: order.subscription?.user_id,
+      date: order.payment_date,
+      amount: order.amount,
+      status: order.status,
+    }));
+  } catch (err) {
+    console.error('Error fetching recent orders:', err);
+    return [];
   }
-
-  return orders.sort((a, b) => b.date.getTime() - a.date.getTime());
-}
-
-// Marketing campaigns
-export function getMarketingCampaigns() {
-  return [
-    {
-      id: 1,
-      name: "Summer Health Boost",
-      type: "Email",
-      status: "Active",
-      startDate: new Date(2023, 5, 1),
-      endDate: new Date(2023, 7, 31),
-      budget: 5000,
-      spent: 3250,
-      leads: 1875,
-      conversions: 342,
-    },
-    {
-      id: 2,
-      name: "Fall Immunity Bundle",
-      type: "Social Media",
-      status: "Scheduled",
-      startDate: new Date(2023, 8, 15),
-      endDate: new Date(2023, 10, 15),
-      budget: 7500,
-      spent: 0,
-      leads: 0,
-      conversions: 0,
-    },
-    {
-      id: 3,
-      name: "New Customer Discount",
-      type: "Google Ads",
-      status: "Active",
-      startDate: new Date(2023, 0, 1),
-      endDate: new Date(2023, 11, 31),
-      budget: 12000,
-      spent: 8750,
-      leads: 4250,
-      conversions: 830,
-    },
-    {
-      id: 4,
-      name: "Referral Program",
-      type: "Referral",
-      status: "Active",
-      startDate: new Date(2023, 2, 1),
-      endDate: null,
-      budget: 3000,
-      spent: 2100,
-      leads: 1350,
-      conversions: 520,
-    },
-    {
-      id: 5,
-      name: "Back to School Wellness",
-      type: "Email",
-      status: "Completed",
-      startDate: new Date(2023, 7, 1),
-      endDate: new Date(2023, 8, 15),
-      budget: 4500,
-      spent: 4500,
-      leads: 2200,
-      conversions: 385,
-    },
-  ];
-}
-
-// Utility functions
-function getRandomName() {
-  const names = [
-    "James",
-    "Mary",
-    "John",
-    "Patricia",
-    "Robert",
-    "Jennifer",
-    "Michael",
-    "Linda",
-    "William",
-    "Elizabeth",
-    "David",
-    "Barbara",
-    "Richard",
-    "Susan",
-    "Joseph",
-    "Jessica",
-    "Thomas",
-    "Sarah",
-    "Charles",
-    "Karen",
-    "Daniel",
-    "Nancy",
-    "Matthew",
-    "Lisa",
-    "Anthony",
-    "Betty",
-    "Donald",
-    "Dorothy",
-    "Mark",
-    "Sandra",
-    "Paul",
-  ];
-
-  return names[Math.floor(Math.random() * names.length)];
-}
-
-function getRandomLastName() {
-  const lastNames = [
-    "Smith",
-    "Johnson",
-    "Williams",
-    "Jones",
-    "Brown",
-    "Davis",
-    "Miller",
-    "Wilson",
-    "Moore",
-    "Taylor",
-    "Anderson",
-    "Thomas",
-    "Jackson",
-    "White",
-    "Harris",
-    "Martin",
-    "Thompson",
-    "Garcia",
-    "Martinez",
-    "Robinson",
-    "Clark",
-    "Rodriguez",
-    "Lewis",
-    "Lee",
-    "Walker",
-    "Hall",
-    "Allen",
-    "Young",
-    "King",
-    "Wright",
-    "Scott",
-    "Green",
-    "Baker",
-  ];
-
-  return lastNames[Math.floor(Math.random() * lastNames.length)];
-}
-
-function getRandomDate(start: Date, end: Date) {
-  return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime())
-  );
-}
-
-function getRandomOrderStatus() {
-  const statuses = ["Completed", "Shipped", "Processing", "Cancelled"];
-  const weights = [0.7, 0.15, 0.1, 0.05]; // 70% completed, 15% shipped, etc.
-
-  const rand = Math.random();
-  let threshold = 0;
-
-  for (let i = 0; i < statuses.length; i++) {
-    threshold += weights[i];
-    if (rand < threshold) return statuses[i];
-  }
-
-  return statuses[0];
 }

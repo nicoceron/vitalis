@@ -3,7 +3,7 @@
 import React from "react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { getAdminDashboardStats, getRecentOrders } from "@/lib/admin-data";
+import { getAdminDashboardStats, getRecentSubscriptions } from "@/api/adminDashboard";
 import {
   BarChart3,
   LineChart,
@@ -24,7 +24,7 @@ export default function AdminAnalyticsPage() {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState("30");
   const [stats] = useState(getAdminDashboardStats());
-  const [orders] = useState(getRecentOrders(100));
+  const [orders] = useState(getRecentSubscriptions(100));
 
   // Mock analytics data
   const monthlySales = [
