@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getRecentUsers } from '@/api/adminDashboard';
+import {
+  getAllUserAccounts,
+  createUserAccount,
+  updateUserAccount,
+  deleteUserAccount,
+} from '@/api/user';
 import { Users, Search, UserPlus, Filter } from 'lucide-react';
 
 export default function AdminUsersPage() {
@@ -10,7 +15,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const data = await getRecentUsers(50);
+      const data = await getAllUserAccounts();
       setUsers(data || []);
     };
 
@@ -26,6 +31,49 @@ export default function AdminUsersPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      const success = await deleteUserAccount(id);
+      if (success) {
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+      }
+    }
+  };
+
+  const handleEdit = async (id: string) => {
+    const name = prompt('New full name:');
+    const isAdmin = confirm('Make admin?');
+
+    if (name) {
+      const updated = await updateUserAccount(id, {
+        full_name: name,
+        is_admin: isAdmin,
+      });
+      if (updated) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === id ? { ...u, ...updated } : u))
+        );
+      }
+    }
+  };
+
+  // const handleAddUser = async () => {
+  //   const full_name = prompt('Full name:');
+  //   const email = prompt('Email:');
+  //   const isAdmin = confirm('Is admin?');
+
+  //   if (full_name && email) {
+  //     const newUser = await createUserAccount({
+  //       full_name,
+  //       email,
+  //       is_admin: isAdmin,
+  //       address_id: 1, // Dummy placeholder, update if necessary
+  //     });
+  //     if (newUser) {
+  //       setUsers((prev) => [newUser, ...prev]);
+  //     }
+  //   }
+  // };
 
   return (
     <div className='p-6 md:p-10'>
@@ -137,10 +185,16 @@ export default function AdminUsersPage() {
                       {new Date(user.joinDate).toLocaleDateString()}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                      <button className='text-emerald-600 hover:text-emerald-900 mr-4'>
+                      <button
+                        onClick={() => handleEdit(user.id)}
+                        className='text-emerald-600 hover:text-emerald-900 mr-4'
+                      >
                         Edit
                       </button>
-                      <button className='text-red-600 hover:text-red-900'>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className='text-red-600 hover:text-red-900'
+                      >
                         Delete
                       </button>
                     </td>

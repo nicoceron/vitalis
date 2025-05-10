@@ -17,12 +17,12 @@ export default function AdminDashboard() {
 
   const [stats, setStats] = useState<any>(null);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [recentSubscriptions, setRecentSubscriptions] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]); // add logic later
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const [statsData, users, orders] = await Promise.all([
+      const [statsData, users, subscriptions] = await Promise.all([
         getAdminDashboardStats(),
         getRecentUsers(5),
         getRecentSubscriptions(5),
@@ -30,7 +30,7 @@ export default function AdminDashboard() {
 
       setStats(statsData);
       setRecentUsers(users);
-      setRecentOrders(orders);
+      setRecentSubscriptions(subscriptions);
     };
 
     fetchDashboardData();
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
             <h1 className='text-2xl md:text-3xl font-bold text-gray-900'>
               Admin Dashboard
             </h1>
-            <div className='text-sm text-gray-500'>Welcome, {user.name}</div>
+            <div className='text-sm text-gray-500'>Welcome, {user?.name}</div>
           </div>
 
           {/* User Statistics */}
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
           />
           <StatsGrid
             stats={[
-              { label: 'Total Sales', value: `${stats.totalSales} orders` },
+              { label: 'Total Sales', value: `${stats.totalSales} subscriptions` },
               { label: 'Revenue', value: `$${stats.revenue.toLocaleString()}` },
               {
                 label: 'Average Order Value',
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
             <RecentTable
               title='Recent Subscriptions'
               headers={['ID', 'User', 'Start Date', 'Plan', 'Status']}
-              rows={recentOrders.map((sub) => [
+              rows={recentSubscriptions.map((sub) => [
                 sub.id,
                 `${sub.user_name} (${sub.user_email})`,
                 new Date(sub.start_date).toLocaleDateString(),
