@@ -4,6 +4,17 @@ export type SubscriptionFrequency = 'monthly' | 'annual';
 
 export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
 
+export type UserAccount = {
+  id: string; // UUID from Supabase Auth
+  full_name: string;
+  address_id?: number; 
+  is_admin: boolean;
+  email: string;
+  created_at: string;
+  last_sign_in_at: string;
+};
+
+
 export interface Product {
   id: ProductId;
   name: string;
@@ -25,27 +36,27 @@ export type Subscription = {
   product_type: ProductId;
 };
 
-export interface Order {
-  id: string;
-  userId: string;
-  orderNumber: string;
-  date: string;
-  items: OrderItem[];
-  total: number;
-  status: 'processing' | 'shipped' | 'delivered' | 'canceled';
-  shippingAddress: Address;
-  paymentMethod: {
-    type: 'credit_card' | 'paypal';
-    last4?: string;
-  };
-}
+// export interface Order {
+//   id: string;
+//   userId: string;
+//   orderNumber: string;
+//   date: string;
+//   items: OrderItem[];
+//   total: number;
+//   status: 'processing' | 'shipped' | 'delivered' | 'canceled';
+//   shippingAddress: Address;
+//   paymentMethod: {
+//     type: 'credit_card' | 'paypal';
+//     last4?: string;
+//   };
+// }
 
-export interface OrderItem {
-  productId: ProductId;
-  name: string;
-  quantity: number;
-  price: number;
-}
+// export interface OrderItem {
+//   productId: ProductId;
+//   name: string;
+//   quantity: number;
+//   price: number;
+// }
 
 export type Address = {
   id: number;

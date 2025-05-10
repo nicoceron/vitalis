@@ -7,8 +7,8 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import type { Order, Subscription } from './types';
-import { getMockOrders, getMockSubscriptions } from './mock-data';
+import type { Subscription } from './types';
+import { getMockSubscriptions } from './mock-data';
 import { loginUser, registerUser } from '../api/auth';
 import { getUserSubscriptions } from '../api/subscription';
 
@@ -27,7 +27,6 @@ type AuthResult = {
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
-  orders: Order[];
   subscriptions: Subscription[];
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (
@@ -46,7 +45,6 @@ const AUTH_CHANGE_EVENT = 'auth_state_changed';
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
   // Helper function to notify components of auth changes
@@ -70,7 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        setOrders(getMockOrders(parsedUser.id));
         setSubscriptions(getMockSubscriptions(parsedUser.id));
       } catch (error) {
         console.error('Error parsing stored user:', error);
@@ -121,7 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (subsResponse.success) {
         const subscriptions = subsResponse.data || [];
         setSubscriptions(subscriptions);
-        setOrders([]); // adjust this if "orders" are different
       } else {
         console.error('Failed to fetch subscriptions:', subsResponse.error);
       }
@@ -165,7 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    setOrders([]);
     setSubscriptions([]);
     localStorage.removeItem('vitalis_user');
 
@@ -178,7 +173,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
-        orders,
         subscriptions,
         login,
         register,
