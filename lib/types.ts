@@ -1,5 +1,5 @@
 export type ProductId = 'vision' | 'neuro' | 'fortify' | 'complete';
-
+export type ProductCategory = 'Supplements' | 'Bundles';
 export type SubscriptionFrequency = 'monthly' | 'annual';
 
 export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
@@ -7,13 +7,12 @@ export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
 export type UserAccount = {
   id: string; // UUID from Supabase Auth
   full_name: string;
-  address_id?: number; 
+  address_id?: number;
   is_admin: boolean;
   email: string;
   created_at: string;
   last_sign_in_at: string;
 };
-
 
 export interface Product {
   id: ProductId;
@@ -21,6 +20,9 @@ export interface Product {
   description: string;
   price: number;
   image: string;
+  is_active: boolean;
+  category: ProductCategory;
+  stock: number;
 }
 
 export type Subscription = {
