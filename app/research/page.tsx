@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function ResearchPage() {
-  // Get current year for footer
-  const currentYear = new Date().getFullYear();
-
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
@@ -16,7 +14,7 @@ export default function ResearchPage() {
       <main className="flex-1 bg-white">
         {/* Section: Intro */}
         <section className="container px-4 md:px-6 py-8 md:py-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">
+          <h1 className="text-3xl md:text-4xl font-normal tracking-tighter mb-4">
             Vitalis: Science-Backed Nutrition for Healthy Aging
           </h1>
           <div className="max-w-3xl mb-6">
@@ -39,7 +37,7 @@ export default function ResearchPage() {
         {/* Section: Needs of Healthy Aging */}
         <section className="bg-gray-50 py-12">
           <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold mb-8">
+            <h2 className="text-3xl font-normal mb-8">
               Understanding the Needs of Healthy Aging
             </h2>
             <p className="text-lg mb-6">
@@ -152,7 +150,7 @@ export default function ResearchPage() {
 
                 <div className="md:w-2/3 lg:w-3/4">
                   <div className="bg-emerald-50 p-4 rounded-lg mb-4">
-                    <h2 className="text-2xl font-bold mb-1">
+                    <h2 className="text-2xl font-semibold  mb-1 tracking-tighter">
                       Vitalis Vision: Foundational Support
                     </h2>
 
@@ -227,7 +225,7 @@ export default function ResearchPage() {
 
                 <div className="md:w-2/3 lg:w-3/4">
                   <div className="bg-emerald-50 p-4 rounded-lg mb-4">
-                    <h2 className="text-2xl font-bold mb-1">
+                    <h2 className="text-2xl font-semibold mb-1 tracking-tighter">
                       Vitalis Neuro: Enhancing Cardiovascular & Cognitive
                       Vitality
                     </h2>
@@ -299,7 +297,7 @@ export default function ResearchPage() {
 
                 <div className="md:w-2/3 lg:w-3/4">
                   <div className="bg-emerald-50 p-4 rounded-lg mb-4">
-                    <h2 className="text-2xl font-bold mb-1">
+                    <h2 className="text-2xl font-semibold mb-1 tracking-tighter ">
                       Vitalis Fortify: Supporting Metabolic Health & Defenses
                     </h2>
 
@@ -355,7 +353,7 @@ export default function ResearchPage() {
         <section className="container px-4 md:px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             <div className="md:col-span-4">
-              <h2 className="text-4xl font-bold tracking-tighter mb-6">
+              <h2 className="text-4xl font-semibold tracking-tighter mb-6">
                 Peer-reviewed research & Studies
               </h2>
               <p className="text-lg">
@@ -1032,47 +1030,7 @@ export default function ResearchPage() {
           </div>
         </section>
       </main>
-      {/* Footer content remains the same */}
-      <footer className="border-t py-6 md:py-8 bg-white">
-        <div className="container flex flex-col gap-4 px-4 md:px-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-emerald-700">
-                Vitalis
-              </span>
-              <span className="text-xs align-top">®</span>
-            </div>
-            <nav className="flex gap-4 sm:gap-6">
-              <Link
-                href="#"
-                className="text-xs hover:underline underline-offset-4"
-              >
-                Terms
-              </Link>
-              <Link
-                href="#"
-                className="text-xs hover:underline underline-offset-4"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="#"
-                className="text-xs hover:underline underline-offset-4"
-              >
-                Contact
-              </Link>
-            </nav>
-          </div>
-          <div className="text-xs text-gray-500">
-            *These statements have not been evaluated by the Food and Drug
-            Administration. This product is not intended to diagnose, treat,
-            cure, or prevent any disease.
-          </div>
-          <div className="text-xs text-gray-500">
-            © {currentYear} Vitalis. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
