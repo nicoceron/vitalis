@@ -235,7 +235,7 @@ export default function CheckoutPage() {
       </div>
       <div className="space-y-4">
         <Button asChild className="w-full bg-emerald-800 hover:bg-emerald-900">
-          <Link href="/account/orders">View My Orders</Link>
+          <Link href="/account/payments">View My Payments</Link>
         </Button>
         <Button asChild variant="outline" className="w-full">
           <Link href="/">Return to Home</Link>
