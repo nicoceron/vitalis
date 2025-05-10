@@ -36,6 +36,9 @@ export type Subscription = {
   created_at: string;
   plan_type: string;
   product_type: ProductId;
+  // Joined data
+  address?: Address;
+  payments?: Payment[];
 };
 
 // export interface Order {
