@@ -1,10 +1,13 @@
 import { supabase } from './apiClient';
 import type { UserAccount } from '@/lib/types';
 
-export type UserAccountCreateInput = Omit<UserAccount, 'created_at' | 'last_sign_in_at'>;
+export type UserAccountCreateInput = Omit<
+  UserAccount,
+  'id' | 'created_at' | 'last_sign_in_at'
+>;
 
 export type UserAccountUpdateInput = Partial<
-  Omit<UserAccount, 'id' | 'created_at'>
+  Omit<UserAccount, 'id' | 'created_at' | 'last_sign_in_at'>
 >;
 
 export async function getAllUserAccounts(): Promise<UserAccount[]> {
@@ -36,7 +39,9 @@ export async function getRecentUsers(limit = 10): Promise<UserAccount[]> {
   return data as UserAccount[];
 }
 
-export async function getUserAccountById(id: string): Promise<UserAccount | null> {
+export async function getUserAccountById(
+  id: string
+): Promise<UserAccount | null> {
   const { data, error } = await supabase
     .from('user_account')
     .select('*')
@@ -51,7 +56,9 @@ export async function getUserAccountById(id: string): Promise<UserAccount | null
   return data as UserAccount;
 }
 
-export async function getUserAccountByEmail(email: string): Promise<UserAccount | null> {
+export async function getUserAccountByEmail(
+  email: string
+): Promise<UserAccount | null> {
   const { data, error } = await supabase
     .from('user_account')
     .select('*')
@@ -59,14 +66,19 @@ export async function getUserAccountByEmail(email: string): Promise<UserAccount 
     .single();
 
   if (error) {
-    console.error(`Error fetching user account with email ${email}:`, error.message);
+    console.error(
+      `Error fetching user account with email ${email}:`,
+      error.message
+    );
     return null;
   }
 
   return data as UserAccount;
 }
 
-export async function createUserAccount(userData: UserAccountCreateInput): Promise<UserAccount | null> {
+export async function createUserAccount(
+  userData: UserAccountCreateInput
+): Promise<UserAccount | null> {
   const { data, error } = await supabase
     .from('user_account')
     .insert([userData])
@@ -81,7 +93,10 @@ export async function createUserAccount(userData: UserAccountCreateInput): Promi
   return data as UserAccount;
 }
 
-export async function updateUserAccount(id: string, updates: UserAccountUpdateInput): Promise<UserAccount | null> {
+export async function updateUserAccount(
+  id: string,
+  updates: UserAccountUpdateInput
+): Promise<UserAccount | null> {
   const { data, error } = await supabase
     .from('user_account')
     .update(updates)
@@ -98,10 +113,7 @@ export async function updateUserAccount(id: string, updates: UserAccountUpdateIn
 }
 
 export async function deleteUserAccount(id: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_account')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('user_account').delete().eq('id', id);
 
   if (error) {
     console.error(`Error deleting user account with id ${id}:`, error.message);
@@ -110,4 +122,3 @@ export async function deleteUserAccount(id: string): Promise<boolean> {
 
   return true;
 }
-

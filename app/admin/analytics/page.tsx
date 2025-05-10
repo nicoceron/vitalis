@@ -121,7 +121,7 @@ export default function AdminAnalyticsPage() {
 
         {(() => {
           const statusCounts = subscriptions.reduce((acc: any, sub) => {
-            acc[sub.is_active] = (acc[sub.is_active] || 0) + 1;
+            acc[sub.status] = (acc[sub.status] || 0) + 1;
             return acc;
           }, {});
 
