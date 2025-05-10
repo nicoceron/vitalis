@@ -83,7 +83,7 @@ export default function AdminLayout({
               <div className="mr-3 text-gray-500 group-hover:text-emerald-600">
                 <ShoppingCart size={20} />
               </div>
-              Orders
+              Subscriptions
             </Link>
             <Link
               href="/admin/products"

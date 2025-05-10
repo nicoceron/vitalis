@@ -45,26 +45,64 @@ export async function loginUser(email: string, password: string) {
       return { success: false, error: loginError.message };
     }
 
-    // Now that the user is authenticated, insert into user_account
-    const { data: userAccountData, error: userAccountError } = await supabase
+    const user = authData.user;
+    const userId = user.id;
+
+    console.log('Logging in with Supabase user ID:', userId);
+
+    // Step 1: Check if user_account exists
+    const { data: userAccount, error: fetchError } = await supabase
       .from('user_account')
-      .insert([
-        {
-          id: authData.user.id,
-          full_name: authData.user.user_metadata.full_name, // pulling from user metadata
-        },
-      ])
+      .select('*')
+      .eq('id', userId)
       .single();
 
-    if (userAccountError) {
-      console.error(
-        'Error inserting into user_account:',
-        userAccountError.message
-      );
-      return { success: false, error: userAccountError.message };
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error checking user_account:', fetchError.message);
+      return { success: false, error: fetchError.message };
     }
 
-    return { success: true, data: authData };
+    // Step 2: If not found, insert a new row with full metadata
+    if (!userAccount) {
+      const { data: newUserAccount, error: insertError } = await supabase
+        .from('user_account')
+        .insert([
+          {
+            id: userId,
+            full_name: user.user_metadata?.full_name ?? '',
+            email: user.email,
+            created_at: user.created_at,
+            last_sign_in_at: user.last_sign_in_at,
+          },
+        ])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error(
+          'Error inserting into user_account:',
+          insertError.message
+        );
+        return { success: false, error: insertError.message };
+      }
+
+      return {
+        success: true,
+        data: {
+          authUser: user,
+          userAccount: newUserAccount,
+        },
+      };
+    }
+
+    // Step 3: If user_account exists, return it
+    return {
+      success: true,
+      data: {
+        authUser: user,
+        userAccount,
+      },
+    };
   } catch (err) {
     console.error('Unexpected error during login:', err);
     return { success: false, error: 'Unexpected error occurred' };

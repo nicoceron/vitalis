@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
-import { registerUser } from '../../api/auth';
+
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +40,9 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await registerUser(email, password, name);
+      const result = await register(email, password, name);
       if (result.success) {
-        router.push('/');
+        router.push('/sign-in');
       } else {
         setError(result.error || 'Registration failed. Please try again.');
       }
