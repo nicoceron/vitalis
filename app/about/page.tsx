@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import {
   Award,
   Leaf,
@@ -288,22 +289,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-6 md:py-8 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-emerald-700">
-                Vitalis
-              </span>
-              <span className="text-xs align-top">®</span>
-            </div>
-            <div className="text-xs text-gray-500">
-              © {new Date().getFullYear()} Vitalis. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
