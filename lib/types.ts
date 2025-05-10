@@ -34,7 +34,7 @@ export type Subscription = {
   status: string;
   next_payment_due_date: string;
   created_at: string;
-  plan_type: string;
+  plan_type: SubscriptionFrequency;
   product_type: ProductId;
   // Joined data
   address?: Address;

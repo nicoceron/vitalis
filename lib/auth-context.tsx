@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react';
 import type { Subscription } from './types';
-import { getMockSubscriptions } from './mock-data';
 import { loginUser, registerUser } from '../api/auth';
 import { getUserSubscriptions } from '../api/subscription';
 
@@ -62,19 +61,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Check if user is stored in localStorage on initial load
-    const storedUser = localStorage.getItem('vitalis_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setSubscriptions(getMockSubscriptions(parsedUser.id));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('vitalis_user');
+    async function initializeUser() {
+      const storedUser = localStorage.getItem('vitalis_user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          const subsResponse = await getUserSubscriptions(parsedUser.id);
+
+          if (subsResponse.success) {
+            setSubscriptions(subsResponse.data || []);
+          } else {
+            console.error('Failed to fetch subscriptions:', subsResponse.error);
+          }
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          localStorage.removeItem('vitalis_user');
+        }
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
+
+    initializeUser();
   }, []);
 
   const login = async (

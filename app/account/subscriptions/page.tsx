@@ -17,28 +17,55 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { products, getSubscriptionPrice } from '@/lib/mock-data';
-import type { ProductId } from '@/lib/types';
+import type { Product, ProductId } from '@/lib/types';
 import {
   CalendarIcon,
   CheckCircle2,
   PauseCircle,
   RefreshCw,
 } from 'lucide-react';
+import { getAllProducts } from '@/api/product';
 
 export default function SubscriptionsPage() {
   const { user, isLoading, subscriptions } = useAuth();
   const router = useRouter();
+  const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>(
+    {}
+  );
+
   const [selectedFrequency, setSelectedFrequency] = useState<
     'monthly' | 'annual'
   >('monthly');
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/sign-in');
-    }
-  }, [user, isLoading, router]);
+    async function fetchProducts() {
+      const data = await getAllProducts();
 
+      // Convert array to object indexed by product id
+      const productMap = data.reduce(
+        (acc: Partial<Record<ProductId, Product>>, product: Product) => {
+          acc[product.id] = product;
+          return acc;
+        },
+        {}
+      );
+
+      setProducts(productMap);
+    }
+
+    fetchProducts();
+  }, []);
+
+  function formatPlanType(planType?: string) {
+    return planType
+      ? planType.charAt(0).toUpperCase() + planType.slice(1)
+      : '—';
+  }
+
+  function getSubscriptionPrice(product: Product, plan: 'monthly' | 'annual') {
+    if (plan === 'annual') return product.price * 12 * 0.8; // 20% discount
+    return product.price;
+  }
   if (isLoading || !user) {
     return (
       <div className='flex flex-col min-h-screen'>
@@ -48,9 +75,6 @@ export default function SubscriptionsPage() {
         </main>
       </div>
     );
-  }
-  function formatTitle(value?: string) {
-    return value ? value.charAt(0).toUpperCase() + value.slice(1) : '—';
   }
 
   const formatDate = (dateString: string) => {
@@ -114,85 +138,97 @@ export default function SubscriptionsPage() {
                   Active Subscriptions
                 </h2>
                 <div className='grid gap-6 md:grid-cols-2'>
-                  {subscriptions.map((subscription) => (
-                    <Card key={subscription.id}>
-                      <CardHeader className='pb-3'>
-                        <div className='flex justify-between items-start'>
-                          <div>
-                            <CardTitle>
-                              {products[subscription.productId].name}
-                            </CardTitle>
-                            <CardDescription className='mt-1'>
-                              {products[subscription.productId].description}
-                            </CardDescription>
+                  {subscriptions.map((subscription) => {
+                    const product =
+                      products[subscription.product_type as ProductId];
+
+                    return (
+                      <Card key={subscription.id}>
+                        <CardHeader className='pb-3'>
+                          <div className='flex justify-between items-start'>
+                            <div>
+                              <CardTitle>
+                                {product?.name ?? 'Unknown Product'}
+                              </CardTitle>
+                              <CardDescription className='mt-1'>
+                                {product?.description ?? ''}
+                              </CardDescription>
+                            </div>
+                            <Badge
+                              className={getStatusColor(subscription.status)}
+                              variant='secondary'
+                            >
+                              <span className='flex items-center gap-1'>
+                                {getStatusIcon(subscription.status)}
+                                {subscription.status.charAt(0).toUpperCase() +
+                                  subscription.status.slice(1)}
+                              </span>
+                            </Badge>
                           </div>
-                          <Badge
-                            className={getStatusColor(subscription.status)}
-                            variant='secondary'
+                        </CardHeader>
+
+                        <CardContent>
+                          <div className='flex items-center gap-4 mb-4'>
+                            <div className='w-16 h-16 relative shrink-0 rounded overflow-hidden'>
+                              <Image
+                                src={product?.image ?? '/placeholder.svg'}
+                                alt={product?.name ?? 'Product image'}
+                                fill
+                                className='object-cover'
+                              />
+                            </div>
+                            <div>
+                              <div className='text-sm text-gray-500'>
+                                Subscription Plan
+                              </div>
+                              <div className='font-medium'>
+                                <div className='font-medium'>
+                                  {formatPlanType(subscription.plan_type)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className='grid grid-cols-2 gap-4 text-sm'>
+                            <div>
+                              <div className='text-gray-500'>
+                                Next billing date
+                              </div>
+                              <div className='font-medium flex items-center gap-1 mt-1'>
+                                <CalendarIcon className='h-4 w-4 text-emerald-700' />
+                                {formatDate(subscription.next_payment_due_date)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className='text-gray-500'>Price</div>
+                              <div className='font-medium mt-1'>
+                                $
+                                {product
+                                  ? getSubscriptionPrice(
+                                      product,
+                                      subscription.plan_type
+                                    )
+                                  : '—'}
+                                {subscription.plan_type === 'annual'
+                                  ? '/year'
+                                  : '/month'}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+
+                        <CardFooter className='flex justify-between pt-3'>
+                          <Button variant='outline'>Manage</Button>
+                          <Button
+                            variant='outline'
+                            className='text-red-600 hover:text-red-700 hover:bg-red-50'
                           >
-                            <span className='flex items-center gap-1'>
-                              {getStatusIcon(subscription.status)}
-                              {subscription.status.charAt(0).toUpperCase() +
-                                subscription.status.slice(1)}
-                            </span>
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className='flex items-center gap-4 mb-4'>
-                          <div className='w-16 h-16 relative shrink-0 rounded overflow-hidden'>
-                            <Image
-                              src={
-                                products[subscription.productId].image ||
-                                '/placeholder.svg'
-                              }
-                              alt={products[subscription.productId].name}
-                              fill
-                              className='object-cover'
-                            />
-                          </div>
-                          <div>
-                            <div className='text-sm text-gray-500'>
-                              Subscription Plan
-                            </div>
-                            <div className='font-medium'>
-                              {subscription.frequency.charAt(0).toUpperCase() +
-                                subscription.frequency.slice(1)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className='grid grid-cols-2 gap-4 text-sm'>
-                          <div>
-                            <div className='text-gray-500'>
-                              Next billing date
-                            </div>
-                            <div className='font-medium flex items-center gap-1 mt-1'>
-                              <CalendarIcon className='h-4 w-4 text-emerald-700' />
-                              {formatDate(subscription.nextBillingDate)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className='text-gray-500'>Price</div>
-                            <div className='font-medium mt-1'>
-                              ${subscription.price.toFixed(2)}
-                              {subscription.frequency === 'annual'
-                                ? '/year'
-                                : '/month'}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className='flex justify-between pt-3'>
-                        <Button variant='outline'>Manage</Button>
-                        <Button
-                          variant='outline'
-                          className='text-red-600 hover:text-red-700 hover:bg-red-50'
-                        >
-                          Cancel
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
+                            Cancel
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -231,56 +267,63 @@ export default function SubscriptionsPage() {
                       </tr>
                     </thead>
                     <tbody className='bg-white divide-y divide-gray-200'>
-                      {subscriptions.map((subscription) => (
-                        <tr key={`history-${subscription.id}`}>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='flex items-center'>
-                              <div className='flex-shrink-0 h-10 w-10 relative'>
-                                <Image
-                                  src={
-                                    products[subscription.productId].image ||
-                                    '/placeholder.svg'
-                                  }
-                                  alt={products[subscription.productId].name}
-                                  fill
-                                  className='rounded-full object-cover'
-                                />
-                              </div>
-                              <div className='ml-4'>
-                                <div className='text-sm font-medium text-gray-900'>
-                                  {products[subscription.productId].name}
+                      {subscriptions.map((subscription) => {
+                        const product =
+                          products[subscription.product_type as ProductId];
+
+                        return (
+                          <tr key={`history-${subscription.id}`}>
+                            <td className='px-6 py-4 whitespace-nowrap'>
+                              <div className='flex items-center'>
+                                <div className='flex-shrink-0 h-10 w-10 relative'>
+                                  <Image
+                                    src={product?.image ?? '/placeholder.svg'}
+                                    alt={product?.name ?? 'Product image'}
+                                    fill
+                                    className='rounded-full object-cover'
+                                  />
+                                </div>
+                                <div className='ml-4'>
+                                  <div className='text-sm font-medium text-gray-900'>
+                                    {product?.name ?? 'Unknown Product'}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='text-sm text-gray-900'>
-                              {subscription.frequency.charAt(0).toUpperCase() +
-                                subscription.frequency.slice(1)}
-                            </div>
-                            <div className='text-sm text-gray-500'>
-                              ${subscription.price.toFixed(2)}
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='text-sm text-gray-900'>
-                              {formatDate(subscription.createdAt)}
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <Badge
-                              className={getStatusColor(subscription.status)}
-                              variant='secondary'
-                            >
-                              <span className='flex items-center gap-1'>
-                                {getStatusIcon(subscription.status)}
-                                {subscription.status.charAt(0).toUpperCase() +
-                                  subscription.status.slice(1)}
-                              </span>
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap'>
+                              <div className='text-sm text-gray-900'>
+                                {formatPlanType(subscription.plan_type)}
+                              </div>
+                              <div className='text-sm text-gray-500'>
+                                $
+                                {product
+                                  ? getSubscriptionPrice(
+                                      product,
+                                      subscription.plan_type
+                                    )
+                                  : '—'}
+                              </div>
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap'>
+                              <div className='text-sm text-gray-900'>
+                                {formatDate(subscription.created_at)}
+                              </div>
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap'>
+                              <Badge
+                                className={getStatusColor(subscription.status)}
+                                variant='secondary'
+                              >
+                                <span className='flex items-center gap-1'>
+                                  {getStatusIcon(subscription.status)}
+                                  {subscription.status.charAt(0).toUpperCase() +
+                                    subscription.status.slice(1)}
+                                </span>
+                              </Badge>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -364,10 +407,7 @@ export default function SubscriptionsPage() {
               <TabsContent value='annual' className='space-y-6'>
                 <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
                   {Object.values(products).map((product) => {
-                    const annualPrice = getSubscriptionPrice(
-                      product.id as ProductId,
-                      'annual'
-                    );
+                    const annualPrice = getSubscriptionPrice(product, 'annual');
                     const monthlyEquivalent = (annualPrice / 12).toFixed(2);
 
                     return (
