@@ -128,11 +128,11 @@ export function UserMenu() {
               Subscriptions
             </Link>
             <Link
-              href="/account/orders"
+              href="/account/payments"
               className="block px-4 py-2 text-sm hover:bg-gray-100"
               onClick={() => setIsOpen(false)}
             >
-              Orders
+              Payments
             </Link>
             <Link
               href="/account"

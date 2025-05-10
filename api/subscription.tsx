@@ -21,7 +21,9 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
   return data as Subscription[];
 }
 
-export async function getRecentSubscriptions(limit = 10): Promise<Subscription[]> {
+export async function getRecentSubscriptions(
+  limit = 10
+): Promise<Subscription[]> {
   const { data, error } = await supabase
     .from('subscription')
     .select('*')
@@ -42,17 +44,15 @@ export async function getUserSubscriptions(userId: string) {
       .from('subscription')
       .select(
         `
-        id,
-        user_id,
-        address_id,
-        start_date,
-        end_date,
-        status,
-        next_payment_due_date,
-        created_at,
-        plan_type,
-        product_type
-      `
+    *,
+    payment (
+      id,
+      amount,
+      payment_date,
+      status,
+      transaction_id
+    )
+  `
       )
       .eq('user_id', userId);
 
