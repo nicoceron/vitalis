@@ -301,8 +301,8 @@ export default function IngredientsPage() {
 
         <section className="py-16 md:py-24 bg-white">
           <div className="container px-4 md:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+              <div className="pr-0 lg:pr-6">
                 <div className="text-sm uppercase font-medium text-emerald-700 mb-2">
                   QUALITY SOURCING
                 </div>
@@ -310,13 +310,13 @@ export default function IngredientsPage() {
                   Farm to Label
                 </h2>
                 <div className="space-y-6">
-                  <p className="text-lg font-light mb-10">
+                  <p className="text-lg font-light">
                     Our farmers in Colombia and Costa Rica are paid premium
                     rates, often 30-40% above market prices, ensuring they can
                     invest in sustainable practices and provide for their
                     communities.
                   </p>
-                  <p className="text-lg font-light mb-10">
+                  <p className="text-lg font-light">
                     We visit our partner farms regularly to establish direct
                     relationships, understand their needs, and ensure ethical
                     working conditions. This farm-to-label transparency allows
@@ -357,8 +357,9 @@ export default function IngredientsPage() {
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="aspect-[4/3] relative rounded-lg overflow-hidden">
+
+              <div className="flex flex-col space-y-4">
+                <div className="aspect-video w-full relative rounded-lg overflow-hidden">
                   <Image
                     src="/farm_1.jpeg"
                     alt="Orange orchards in Colombia"
@@ -366,7 +367,7 @@ export default function IngredientsPage() {
                     className="object-cover"
                   />
                 </div>
-                <div className="grid grid-cols-2 mt-4 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="aspect-square relative rounded-lg overflow-hidden">
                     <Image
                       src="/farm_3.jpg"
