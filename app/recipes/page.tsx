@@ -11,7 +11,7 @@ export default function RecipesPage() {
         {/* Hero Section */}
         <section className="bg-emerald-50 py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-gray-900 mb-6">
               Vitalis <span className="text-emerald-700">Recipes</span>
             </h1>
             <p className="text-lg text-gray-700 mb-8 max-w-3xl mx-auto">

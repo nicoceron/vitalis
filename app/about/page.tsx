@@ -102,7 +102,7 @@ export default function AboutPage() {
               <span className="inline-block px-3 py-1 rounded bg-emerald-50 text-emerald-700 text-sm font-medium mb-6">
                 About Vitalis
               </span>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-gray-900 mb-6 leading-tight">
                 Redefining Health Through{" "}
                 <span className="text-emerald-700">Nature's Wisdom</span>
               </h1>
@@ -130,7 +130,7 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-md">
+              <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-md ">
                 <Image
                   src="/family.jpeg"
                   alt="Vitalis - Empowering health naturally"
@@ -138,16 +138,6 @@ export default function AboutPage() {
                   className="object-cover"
                   priority
                 />
-              </div>
-              <div className="absolute -bottom-4 right-4 bg-white p-4 rounded shadow">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
-                    <Check size={16} />
-                  </div>
-                  <p className="text-sm font-medium text-gray-900">
-                    100% Natural Ingredients
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -162,7 +152,7 @@ export default function AboutPage() {
               <span className="inline-block px-3 py-1 rounded bg-emerald-50 text-emerald-700 text-sm font-medium mb-3">
                 What We Stand For
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4">
                 Our Core Values
               </h2>
               <p className="text-lg text-gray-700 max-w-3xl">
@@ -267,7 +257,7 @@ export default function AboutPage() {
               <span className="inline-block px-3 py-1 rounded bg-emerald-50 text-emerald-700 text-sm font-medium mb-3">
                 Quality Assurance
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4">
                 Our Certifications
               </h2>
               <p className="text-lg text-gray-700 max-w-3xl">
