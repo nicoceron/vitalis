@@ -59,26 +59,27 @@ export async function getAdminDashboardStats() {
         .eq('status', 'active'),
     ]);
 
-    const totalRevenue = allPayments.reduce(
+    const totalRevenue = (allPayments ?? []).reduce(
       (acc, p) => acc + Number(p.amount),
       0
     );
-    const totalSales = allPayments.length;
+    const totalSales = allPayments?.length ?? 0;
     const averageOrderValue = totalRevenue / (totalSales || 1);
 
-    const revenueThisMonth = paymentsThisMonth.reduce(
+    const revenueThisMonth = (paymentsThisMonth ?? []).reduce(
       (acc, p) => acc + Number(p.amount),
       0
     );
-    const revenueLastMonth = paymentsLastMonth.reduce(
+    const revenueLastMonth = (paymentsLastMonth ?? []).reduce(
       (acc, p) => acc + Number(p.amount),
       0
     );
 
-    const avgOrderThisMonth = paymentsThisMonth.length
+    const avgOrderThisMonth = paymentsThisMonth?.length
       ? revenueThisMonth / paymentsThisMonth.length
       : 0;
-    const avgOrderLastMonth = paymentsLastMonth.length
+
+    const avgOrderLastMonth = paymentsLastMonth?.length
       ? revenueLastMonth / paymentsLastMonth.length
       : 0;
 
@@ -91,10 +92,13 @@ export async function getAdminDashboardStats() {
       activeSubscriptions,
       averageOrderValue,
       revenueGrowth: calcGrowth(revenueLastMonth, revenueThisMonth),
-      userGrowthRate: calcGrowth(usersLastMonth.length, usersThisMonth.length),
+      userGrowthRate: calcGrowth(
+        usersLastMonth?.length ?? 0,
+        usersThisMonth?.length ?? 0
+      ),
       salesGrowth: calcGrowth(
-        paymentsLastMonth.length,
-        paymentsThisMonth.length
+        paymentsLastMonth?.length ?? 0,
+        paymentsThisMonth?.length ?? 0
       ),
       averageOrderGrowth: calcGrowth(avgOrderLastMonth, avgOrderThisMonth),
     };
