@@ -21,6 +21,21 @@ export async function getAllUserAccounts(): Promise<UserAccount[]> {
   return data as UserAccount[];
 }
 
+export async function getRecentUsers(limit = 10): Promise<UserAccount[]> {
+  const { data, error } = await supabase
+    .from('user_account')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent users:', error.message);
+    return [];
+  }
+
+  return data as UserAccount[];
+}
+
 export async function getUserAccountById(id: string): Promise<UserAccount | null> {
   const { data, error } = await supabase
     .from('user_account')

@@ -7,6 +7,35 @@ export type SubscriptionUpdateInput = Partial<
   Omit<Subscription, 'id' | 'user_id' | 'created_at'>
 >;
 
+export async function getAllSubscriptions(): Promise<Subscription[]> {
+  const { data, error } = await supabase
+    .from('subscription')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all subscriptions:', error.message);
+    return [];
+  }
+
+  return data as Subscription[];
+}
+
+export async function getRecentSubscriptions(limit = 10): Promise<Subscription[]> {
+  const { data, error } = await supabase
+    .from('subscription')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent subscriptions:', error.message);
+    return [];
+  }
+
+  return data as Subscription[];
+}
+
 export async function getUserSubscriptions(userId: string) {
   try {
     const { data, error } = await supabase
