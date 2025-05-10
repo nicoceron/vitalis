@@ -42,7 +42,7 @@ export default function NeuroProductPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/placeholder.svg?height=800&width=700"
+              src="/neuro.jpeg"
               alt="Vitalis Neuro product"
               fill
               className="object-cover"

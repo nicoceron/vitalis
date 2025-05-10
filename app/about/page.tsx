@@ -63,7 +63,7 @@ export default function AboutPage() {
             <div className="md:w-1/2 relative">
               <div className="aspect-video relative rounded-lg overflow-hidden">
                 <Image
-                  src="/placeholder.jpg"
+                  src="/family.jpeg"
                   alt="Vitalis laboratory researchers"
                   fill
                   className="object-cover"

@@ -11,9 +11,9 @@ export default function Home() {
         <section className="w-full py-12 md:py-24 bg-white">
           <div className="container grid md:grid-cols-2 gap-8 px-4 md:px-6">
             <div className="flex items-center justify-center">
-              <div className="relative w-full max-w-md aspect-square">
+              <div className="relative w-full max-w-xl aspect-square">
                 <Image
-                  src="/placeholder.svg?height=600&width=600"
+                  src="/powder.jpeg?height=700&width=700"
                   alt="Vitalis powder supplement in a glass with water"
                   fill
                   className="object-cover rounded-lg"
@@ -22,12 +22,12 @@ export default function Home() {
               </div>
             </div>
             <div className="flex flex-col justify-center space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal tracking-tighter">
                 Pure Tropical Energy,
                 <br />
                 Natural Vitality
               </h1>
-              <p className="text-lg md:text-xl text-gray-700">
+              <p className="text-lg md:text-xl text-gray-700 font-light  ">
                 Vitalis is a daily superfood powder packed with nutrient-rich
                 fruits from Colombia and Costa Rica to boost your energy,
                 support your immune system, and enhance your overall wellbeing.
@@ -96,7 +96,10 @@ export default function Home() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium">
+                  <h3
+                    className="font-extralight"
+                    style={{ fontSize: "1.25rem" }}
+                  >
                     100% Natural, Organic Ingredients
                   </h3>
                 </div>
@@ -121,7 +124,10 @@ export default function Home() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium">
+                  <h3
+                    className="font-extralight"
+                    style={{ fontSize: "1.25rem" }}
+                  >
                     Supports natural energy & vitality*
                   </h3>
                 </div>
@@ -144,7 +150,10 @@ export default function Home() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium">
+                  <h3
+                    className="font-extralight"
+                    style={{ fontSize: "1.25rem" }}
+                  >
                     Sustainably sourced from tropical farms
                   </h3>
                 </div>
@@ -156,7 +165,7 @@ export default function Home() {
         <section className="w-full py-12 md:py-24 bg-white">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+              <h2 className="text-3xl font-normal tracking-tighter md:text-4xl">
                 The Vitalis Difference
               </h2>
               <p className="mt-4 text-gray-700 md:text-lg">
@@ -167,13 +176,13 @@ export default function Home() {
               <div className="flex flex-col items-center text-center">
                 <div className="w-full aspect-square relative mb-4 overflow-hidden rounded-lg">
                   <Image
-                    src="/placeholder.svg?height=300&width=300"
+                    src="/colfruit_landing.jpeg?height=300&width=300"
                     alt="Colombian fruits"
                     fill
                     className="object-cover"
                   />
                 </div>
-                <h3 className="text-xl font-bold">Colombian Superfruits</h3>
+                <h3 className="text-xl font-normal">Colombian Superfruits</h3>
                 <p className="mt-2 text-gray-700">
                   Packed with exotic fruits like lulo, guanabana, and açaí for
                   antioxidant power.
@@ -182,13 +191,13 @@ export default function Home() {
               <div className="flex flex-col items-center text-center">
                 <div className="w-full aspect-square relative mb-4 overflow-hidden rounded-lg">
                   <Image
-                    src="/placeholder.svg?height=300&width=300"
+                    src="/cosfruit_landing.jpeg?height=300&width=300"
                     alt="Costa Rican fruits"
                     fill
                     className="object-cover"
                   />
                 </div>
-                <h3 className="text-xl font-bold">Costa Rican Vitality</h3>
+                <h3 className="text-xl font-normal">Costa Rican Vitality</h3>
                 <p className="mt-2 text-gray-700">
                   Featuring nutrient-dense pitahaya, guava, and papaya to
                   support immune health.
@@ -197,13 +206,13 @@ export default function Home() {
               <div className="flex flex-col items-center text-center">
                 <div className="w-full aspect-square relative mb-4 overflow-hidden rounded-lg">
                   <Image
-                    src="/placeholder.svg?height=300&width=300"
+                    src="/smoothies.jpeg?height=300&width=300"
                     alt="Powder supplement"
                     fill
                     className="object-cover"
                   />
                 </div>
-                <h3 className="text-xl font-bold">Easy Daily Ritual</h3>
+                <h3 className="text-xl font-normal">Easy Daily Ritual</h3>
                 <p className="mt-2 text-gray-700">
                   Just one scoop in water or your favorite smoothie delivers a
                   full spectrum of nutrients.
@@ -217,7 +226,7 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                <h2 className="text-3xl font-normal tracking-tighter md:text-4xl">
                   Transform Your Daily Routine
                 </h2>
                 <p className="mt-4 text-gray-700 md:text-lg">
@@ -296,7 +305,7 @@ export default function Home() {
               <div className="relative">
                 <div className="aspect-square w-full relative rounded-lg overflow-hidden">
                   <Image
-                    src="/placeholder.svg?height=600&width=600"
+                    src="/grandma.jpeg?height=600&width=600"
                     alt="Vitalis powder being mixed in water"
                     fill
                     className="object-cover"

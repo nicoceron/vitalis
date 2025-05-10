@@ -58,8 +58,8 @@ export default function DistributorFortifyPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/placeholder.svg?height=800&width=700"
-              alt="Vitalis Fortify bulk packages"
+              src="/fortify.jpeg"
+              alt="Vitalis Fortify product"
               fill
               className="object-cover"
               priority

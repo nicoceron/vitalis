@@ -58,8 +58,8 @@ export default function DistributorVisionPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/placeholder.svg?height=800&width=700"
-              alt="Vitalis Vision bulk packages"
+              src="/vision.jpeg"
+              alt="Vitalis Vision product"
               fill
               className="object-cover"
               priority
@@ -134,7 +134,7 @@ export default function DistributorVisionPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center text-sm text-gray-600">
                   <span className="mr-2 text-emerald-700">•</span>
-                  Golden Berry (Uchuva)
+                  Golden Berry
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <span className="mr-2 text-emerald-700">•</span>
@@ -154,7 +154,7 @@ export default function DistributorVisionPage() {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <span className="mr-2 text-emerald-700">•</span>
-                  Annatto (Achiote)
+                  Annatto
                 </div>
               </div>
             </div>
