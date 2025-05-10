@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [recentSubscriptions, setRecentSubscriptions] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]); // add logic later
+  const [campaigns, setCampaigns] = useState<any[]>([]); // ! add logic later
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -88,7 +88,10 @@ export default function AdminDashboard() {
           />
           <StatsGrid
             stats={[
-              { label: 'Total Sales', value: `${stats.totalSales} subscriptions` },
+              {
+                label: 'Total Sales',
+                value: `${stats.totalSales} subscriptions`,
+              },
               { label: 'Revenue', value: `$${stats.revenue.toLocaleString()}` },
               {
                 label: 'Average Order Value',
@@ -129,9 +132,9 @@ export default function AdminDashboard() {
               title='Recent Users'
               headers={['Name', 'Email', 'Join Date']}
               rows={recentUsers.map((user) => [
-                user.name,
+                user.full_name,
                 user.email,
-                user.joinDate.toLocaleDateString(),
+                new Date(user.created_at).toLocaleDateString(),
               ])}
             />
 

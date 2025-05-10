@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -57,23 +57,23 @@ export default function AdminUsersPage() {
     }
   };
 
-  // const handleAddUser = async () => {
-  //   const full_name = prompt('Full name:');
-  //   const email = prompt('Email:');
-  //   const isAdmin = confirm('Is admin?');
+  const handleAddUser = async () => {
+    const full_name = prompt('Full name:');
+    const email = prompt('Email:');
+    const isAdmin = confirm('Is admin?');
 
-  //   if (full_name && email) {
-  //     const newUser = await createUserAccount({
-  //       full_name,
-  //       email,
-  //       is_admin: isAdmin,
-  //       address_id: 1, // Dummy placeholder, update if necessary
-  //     });
-  //     if (newUser) {
-  //       setUsers((prev) => [newUser, ...prev]);
-  //     }
-  //   }
-  // };
+    if (full_name && email) {
+      const newUser = await createUserAccount({
+        full_name,
+        email,
+        is_admin: isAdmin,
+        address_id: 1, // Dummy placeholder, update if necessary
+      });
+      if (newUser) {
+        setUsers((prev) => [newUser, ...prev]);
+      }
+    }
+  };
 
   return (
     <div className='p-6 md:p-10'>
@@ -85,7 +85,10 @@ export default function AdminUsersPage() {
             </div>
             Users
           </h1>
-          <button className='bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded flex items-center'>
+          <button
+            onClick={handleAddUser}
+            className='bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded flex items-center'
+          >
             <div className='mr-2'>
               <UserPlus size={16} />
             </div>
@@ -153,11 +156,11 @@ export default function AdminUsersPage() {
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='flex items-center'>
                         <div className='h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-medium'>
-                          {user.name.charAt(0)}
+                          {user.full_name.charAt(0)}
                         </div>
                         <div className='ml-4'>
                           <div className='text-sm font-medium text-gray-900'>
-                            {user.name}
+                            {user.full_name}
                           </div>
                         </div>
                       </div>
@@ -182,7 +185,7 @@ export default function AdminUsersPage() {
                       )}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                      {new Date(user.joinDate).toLocaleDateString()}
+                      {new Date(user.created_at).toLocaleDateString()}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
                       <button
