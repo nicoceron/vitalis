@@ -1,8 +1,6 @@
-import { getAllUserAccounts } from './user';
-import { getAllPayments } from './payment';
-import { getAllSubscriptions } from './subscription';
 import { getRecentUsers as fetchRecentUsers } from './user';
 import { getRecentSubscriptions as fetchRecentSubscriptions } from './subscription';
+import { getAllCampaigns } from './campaign';
 import { supabase } from './apiClient';
 
 export async function getAdminDashboardStats() {
@@ -28,6 +26,7 @@ export async function getAdminDashboardStats() {
       { count: totalUsers },
       { count: adminUsers },
       { count: activeSubscriptions },
+      allCampaigns,
     ] = await Promise.all([
       supabase
         .from('user_account')
@@ -57,6 +56,7 @@ export async function getAdminDashboardStats() {
         .from('subscription')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active'),
+      getAllCampaigns(),
     ]);
 
     const totalRevenue = (allPayments ?? []).reduce(
@@ -101,6 +101,7 @@ export async function getAdminDashboardStats() {
         paymentsThisMonth?.length ?? 0
       ),
       averageOrderGrowth: calcGrowth(avgOrderLastMonth, avgOrderThisMonth),
+      campaigns: allCampaigns,
     };
   } catch (err) {
     console.error('Dashboard stats error:', err);

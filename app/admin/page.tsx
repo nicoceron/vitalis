@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [recentSubscriptions, setRecentSubscriptions] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]); // ! add logic later
+  const [campaigns, setCampaigns] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -31,6 +31,7 @@ export default function AdminDashboard() {
       setStats(statsData);
       setRecentUsers(users);
       setRecentSubscriptions(subscriptions);
+      setCampaigns(statsData?.campaigns ?? []);
     };
 
     fetchDashboardData();
