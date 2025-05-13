@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getMarketingCampaigns } from '@/lib/marketing-data';
+import {
+  getAllCampaigns,
+  deleteCampaign,
+  updateCampaign,
+} from '@/api/campaign';
 import {
   Search,
   PlusCircle,
@@ -15,47 +18,38 @@ import {
   Share2,
   BarChart,
 } from 'lucide-react';
+import type { Campaign } from '@/lib/types';
 
 export default function AdminMarketingPage() {
   const { user } = useAuth();
-  const [campaigns, setCampaigns] = useState(getMarketingCampaigns());
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
-  // Calculate total performance metrics
-  const totalBudget = campaigns.reduce(
-    (sum, campaign) => sum + campaign.budget,
-    0
-  );
-  const totalSpent = campaigns.reduce(
-    (sum, campaign) => sum + campaign.spent,
-    0
-  );
-  const totalConversions = campaigns.reduce(
-    (sum, campaign) => sum + campaign.conversions,
-    0
-  );
-  const totalLeads = campaigns.reduce(
-    (sum, campaign) => sum + campaign.leads,
-    0
-  );
+  useEffect(() => {
+    async function loadCampaigns() {
+      const data = await getAllCampaigns();
+      setCampaigns(data);
+    }
+    loadCampaigns();
+  }, []);
+
+  const totalBudget = campaigns.reduce((sum, c) => sum + c.budget, 0);
+  const totalSpent = campaigns.reduce((sum, c) => sum + c.spent, 0);
+  const totalConversions = campaigns.reduce((sum, c) => sum + c.conversions, 0);
+  const totalLeads = campaigns.reduce((sum, c) => sum + c.leads, 0);
   const conversionRate =
     totalLeads > 0 ? (totalConversions / totalLeads) * 100 : 0;
-  const activeCampaigns = campaigns.filter(
-    (campaign) => campaign.status === 'Active'
-  ).length;
+  const activeCampaigns = campaigns.filter((c) => c.status === 'Active').length;
 
-  // Filter campaigns based on search and status
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesSearch = campaign.name
+  const filteredCampaigns = campaigns.filter((c) => {
+    const matchesSearch = c.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'All' || campaign.status === statusFilter;
+    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  // Get campaign type icon
   const getCampaignTypeIcon = (type: string) => {
     switch (type) {
       case 'Email':
@@ -85,7 +79,6 @@ export default function AdminMarketingPage() {
         </button>
       </div>
 
-      {/* Performance Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-8'>
         <div className='bg-white p-6 rounded-lg shadow-sm border'>
           <div className='text-sm font-medium text-gray-500 mb-1'>
@@ -133,7 +126,6 @@ export default function AdminMarketingPage() {
         </div>
       </div>
 
-      {/* Filters and Search */}
       <div className='bg-white p-4 rounded-lg shadow-sm mb-6 border'>
         <div className='flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4'>
           <div className='relative flex-1'>
@@ -163,7 +155,6 @@ export default function AdminMarketingPage() {
         </div>
       </div>
 
-      {/* Campaigns Table */}
       <div className='bg-white overflow-hidden shadow-sm rounded-lg border'>
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200'>
@@ -257,9 +248,10 @@ export default function AdminMarketingPage() {
                     </span>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                    {campaign.startDate.toLocaleDateString()}
-                    {campaign.endDate &&
-                      ` - ${campaign.endDate.toLocaleDateString()}`}
+                    {new Date(campaign.start_date).toLocaleDateString()} -{' '}
+                    {campaign.end_date
+                      ? new Date(campaign.end_date).toLocaleDateString()
+                      : '—'}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
                     <div className='flex flex-col'>
@@ -300,7 +292,10 @@ export default function AdminMarketingPage() {
                     <button className='text-emerald-600 hover:text-emerald-900 mr-3'>
                       Edit
                     </button>
-                    <button className='text-red-600 hover:text-red-900'>
+                    <button
+                      className='text-red-600 hover:text-red-900'
+                      onClick={() => deleteCampaign(campaign.id)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -311,7 +306,6 @@ export default function AdminMarketingPage() {
         </div>
       </div>
 
-      {/* Pagination */}
       <div className='flex items-center justify-between mt-6'>
         <div className='text-sm text-gray-700'>
           Showing{' '}

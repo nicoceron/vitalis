@@ -91,3 +91,19 @@ export type Shipping = {
   tracking_number: string;
   created_at: string;
 };
+
+export type CampaignStatus = 'Active' | 'Scheduled' | 'Completed';
+
+export interface Campaign {
+  id: number;
+  name: string;
+  type: string;
+  status: CampaignStatus;
+  start_date: string; // ISO string
+  end_date?: string | null;
+  budget: number;
+  spent: number;
+  leads: number;
+  conversions: number;
+  created_at: string;
+}
