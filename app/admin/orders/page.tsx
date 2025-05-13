@@ -28,7 +28,7 @@ export default function AdminSubscriptionsPage() {
 
   const filteredSubscriptions = subscriptions.filter(
     (s) =>
-      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(s.id)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.user_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
