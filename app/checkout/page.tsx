@@ -1,78 +1,253 @@
 "use client";
+
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { SiteHeader } from "@/components/site-header";
 import { ArrowRight, Check } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SiteHeader } from "@/components/site-header";
 import { useCart } from "@/lib/cartContext";
+import { saveShippingInfo, ShippingInfoInput } from "@/api/saveShippingInfo";
+import { createSubscription } from "@/api/createSubscription";
+
+type Step = "shipping" | "payment" | "confirmation";
 
 export default function CheckoutPage() {
-  const [step, setStep] = useState("shipping"); // shipping, payment, confirmation
-  const [paymentMethod, setPaymentMethod] = useState("credit-card");
-  const [shippingMethod, setShippingMethod] = useState("standard");
-  const { cartItems, subtotal, itemCount } = useCart();
+  const [step, setStep] = useState<Step>("shipping");
+  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
+  const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal" | "apple-pay">("credit-card");
+  const [loading, setLoading] = useState(false);
 
-  // Calculate order summary
-  const shipping = shippingMethod === "express" ? 12.95 : 0;
-  const tax = Math.round(subtotal * 0.08 * 100) / 100; // 8% tax
-  const total = subtotal + shipping + tax;
+  // Shipping info state
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfoInput>({
+    first_name: "",
+    last_name:  "",
+    email:      "",
+    street:     "",
+    city:       "",
+    state:      "",
+    zip:        "",
+    country:    "United States",
+    phone:      "",
+  });
 
-  // Render shipping step
+  // Credit-card fields
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
+  const [nameOnCard, setNameOnCard] = useState("");
+
+  const { cartItems, subtotal, itemCount, clearCart } = useCart();
+  const shippingCost = shippingMethod === "express" ? 12.95 : 0;
+  const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
+  const total = subtotal + shippingCost + tax;
+
+  const handleCompletePurchase = async () => {
+    setLoading(true);
+    try {
+      // 1) Save shipping address
+      const addressId = await saveShippingInfo(shippingInfo);
+
+      const productTypeMap = {
+        "Vitalis Vision":          "vision",
+        "Vitalis Neuro":           "neuro",
+        "Vitalis Fortify":         "fortify",
+        "Vitalis Complete Bundle": "complete",
+      };
+
+      // 2) Create one subscription per cart item
+      for (const item of cartItems) {
+
+        await createSubscription({
+          address_id:   addressId,
+          plan_type:    item.type,
+          product_type: productTypeMap[item.name as keyof typeof productTypeMap],
+        });
+      }
+
+      // 3) Clear cart & go to confirmation
+      clearCart();
+      setStep("confirmation");
+    } catch (err) {
+      console.error("Error completing purchase:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderOrderSummary = () => (
+    <div className="bg-white rounded-lg p-6 border">
+      <h3 className="font-medium mb-4">Order Summary</h3>
+      <div className="space-y-4 mb-4">
+        {cartItems.map((item) => (
+          <div key={item.id} className="flex items-start">
+            <Image
+              src={item.image}
+              alt={item.name}
+              width={48}
+              height={48}
+              className="rounded"
+            />
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-xs text-gray-500">
+                {(item as any).purchaseType === "subscription"
+                  ? "Monthly Subscription"
+                  : "One-time Purchase"}
+              </p>
+              <div className="flex justify-between text-sm mt-1">
+                <span>Qty: {item.quantity}</span>
+                <span>${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="border-t pt-4 space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span>Subtotal ({itemCount} items)</span>
+          <span>${subtotal.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Shipping</span>
+          <span>{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Tax</span>
+          <span>${tax.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between font-bold pt-2 border-t">
+          <span>Total</span>
+          <span>${total.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderShippingStep = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Shipping Information</h2>
-
+      <h2 className="text-2xl font-bold">Shipping Information</h2>
       <div className="bg-white rounded-lg p-6 border">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* First Name */}
           <div>
             <Label htmlFor="firstName">First Name</Label>
-            <Input id="firstName" placeholder="First name" className="mt-1" />
+            <Input
+              id="firstName"
+              value={shippingInfo.first_name}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, first_name: e.target.value })
+              }
+              placeholder="First name"
+              className="mt-1"
+            />
           </div>
+          {/* Last Name */}
           <div>
             <Label htmlFor="lastName">Last Name</Label>
-            <Input id="lastName" placeholder="Last name" className="mt-1" />
+            <Input
+              id="lastName"
+              value={shippingInfo.last_name}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, last_name: e.target.value })
+              }
+              placeholder="Last name"
+              className="mt-1"
+            />
           </div>
+          {/* Email */}
           <div className="md:col-span-2">
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
+              value={shippingInfo.email}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, email: e.target.value })
+              }
               placeholder="Email address"
               className="mt-1"
             />
           </div>
+          {/* Street */}
           <div className="md:col-span-2">
-            <Label htmlFor="address">Street Address</Label>
-            <Input id="address" placeholder="Street address" className="mt-1" />
+            <Label htmlFor="street">Street Address</Label>
+            <Input
+              id="street"
+              value={shippingInfo.street}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, street: e.target.value })
+              }
+              placeholder="Street address"
+              className="mt-1"
+            />
           </div>
+          {/* City */}
           <div>
             <Label htmlFor="city">City</Label>
-            <Input id="city" placeholder="City" className="mt-1" />
+            <Input
+              id="city"
+              value={shippingInfo.city}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, city: e.target.value })
+              }
+              placeholder="City"
+              className="mt-1"
+            />
           </div>
+          {/* State */}
           <div>
             <Label htmlFor="state">State</Label>
-            <Input id="state" placeholder="State" className="mt-1" />
+            <Input
+              id="state"
+              value={shippingInfo.state}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, state: e.target.value })
+              }
+              placeholder="State"
+              className="mt-1"
+            />
           </div>
+          {/* ZIP Code */}
           <div>
             <Label htmlFor="zip">ZIP Code</Label>
-            <Input id="zip" placeholder="ZIP code" className="mt-1" />
+            <Input
+              id="zip"
+              value={shippingInfo.zip}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, zip: e.target.value })
+              }
+              placeholder="ZIP code"
+              className="mt-1"
+            />
           </div>
+          {/* Country */}
           <div>
             <Label htmlFor="country">Country</Label>
             <Input
               id="country"
-              placeholder="Country"
-              defaultValue="United States"
+              value={shippingInfo.country}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, country: e.target.value })
+              }
               className="mt-1"
             />
           </div>
+          {/* Phone */}
           <div className="md:col-span-2">
             <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" placeholder="Phone number" className="mt-1" />
+            <Input
+              id="phone"
+              value={shippingInfo.phone}
+              onChange={(e) =>
+                setShippingInfo({ ...shippingInfo, phone: e.target.value })
+              }
+              placeholder="Phone number"
+              className="mt-1"
+            />
           </div>
         </div>
 
@@ -80,7 +255,7 @@ export default function CheckoutPage() {
           <h3 className="font-medium mb-3">Shipping Method</h3>
           <RadioGroup
             value={shippingMethod}
-            onValueChange={setShippingMethod}
+            onValueChange={(v) => setShippingMethod(v as "standard" | "express")}
             className="space-y-3"
           >
             <div className="flex items-center justify-between border rounded-lg p-4">
@@ -119,26 +294,23 @@ export default function CheckoutPage() {
         </Button>
         <Button
           onClick={() => setStep("payment")}
-          className="w-2/3 bg-emerald-800 hover:bg-emerald-900 text-white py-6 flex items-center justify-center"
+          className="w-2/3 bg-emerald-800 text-white"
         >
-          Continue to Payment{" "}
-          <span className="ml-2">
-            <ArrowRight size={20} />
-          </span>
+          Continue to Payment <ArrowRight className="inline ml-2" />
         </Button>
       </div>
     </div>
   );
 
-  // Render payment step
   const renderPaymentStep = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Payment Method</h2>
-
+      <h2 className="text-2xl font-bold">Payment Method</h2>
       <div className="bg-white rounded-lg p-6 border">
         <RadioGroup
           value={paymentMethod}
-          onValueChange={setPaymentMethod}
+          onValueChange={(v) =>
+            setPaymentMethod(v as "credit-card" | "paypal" | "apple-pay")
+          }
           className="space-y-3"
         >
           <div className="flex items-center border rounded-lg p-4">
@@ -163,30 +335,49 @@ export default function CheckoutPage() {
 
         {paymentMethod === "credit-card" && (
           <div className="mt-6 space-y-4">
+            {/* Card Number */}
             <div>
               <Label htmlFor="cardNumber">Card Number</Label>
               <Input
                 id="cardNumber"
                 placeholder="1234 5678 9012 3456"
                 className="mt-1"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
               />
             </div>
+            {/* Expiry & CVC */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="expiry">Expiration Date</Label>
-                <Input id="expiry" placeholder="MM/YY" className="mt-1" />
+                <Input
+                  id="expiry"
+                  placeholder="MM/YY"
+                  className="mt-1"
+                  value={expiry}
+                  onChange={(e) => setExpiry(e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="cvc">CVC</Label>
-                <Input id="cvc" placeholder="123" className="mt-1" />
+                <Input
+                  id="cvc"
+                  placeholder="123"
+                  className="mt-1"
+                  value={cvc}
+                  onChange={(e) => setCvc(e.target.value)}
+                />
               </div>
             </div>
+            {/* Name on Card */}
             <div>
               <Label htmlFor="nameOnCard">Name on Card</Label>
               <Input
                 id="nameOnCard"
                 placeholder="Name on card"
                 className="mt-1"
+                value={nameOnCard}
+                onChange={(e) => setNameOnCard(e.target.value)}
               />
             </div>
           </div>
@@ -196,37 +387,26 @@ export default function CheckoutPage() {
       {renderOrderSummary()}
 
       <div className="mt-8 flex space-x-4">
-        <Button
-          onClick={() => setStep("shipping")}
-          variant="outline"
-          className="w-1/3"
-        >
+        <Button variant="outline" className="w-1/3" onClick={() => setStep("shipping")}>
           Back
         </Button>
         <Button
-          onClick={() => setStep("confirmation")}
-          className="w-2/3 bg-emerald-800 hover:bg-emerald-900 text-white py-6 flex items-center justify-center"
+          onClick={handleCompletePurchase}
+          disabled={loading}
+          className="w-2/3 bg-emerald-800 text-white"
         >
-          Complete Purchase{" "}
-          <span className="ml-2">
-            <ArrowRight size={20} />
-          </span>
+          {loading ? "Processing…" : "Complete Purchase"} <ArrowRight className="inline ml-2" />
         </Button>
       </div>
     </div>
   );
 
-  // Render confirmation step
   const renderConfirmationStep = () => (
     <div className="bg-white rounded-lg p-8 border text-center">
-      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <Check className="w-8 h-8 text-emerald-700" />
-      </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        Order Confirmed!
-      </h2>
+      <Check className="mx-auto mb-4 text-emerald-700 w-8 h-8" />
+      <h2 className="text-2xl font-bold mb-2">Order Confirmed!</h2>
       <p className="text-gray-600 mb-6">
-        Thank you for your purchase. We've sent a confirmation to your email.
+        Thank you! A confirmation email has been sent.
       </p>
       <div className="bg-emerald-50 rounded-lg p-4 mb-8 max-w-md mx-auto">
         <p className="text-emerald-800 font-medium">
@@ -234,7 +414,7 @@ export default function CheckoutPage() {
         </p>
       </div>
       <div className="space-y-4">
-        <Button asChild className="w-full bg-emerald-800 hover:bg-emerald-900">
+        <Button asChild className="w-full bg-emerald-800 text-white">
           <Link href="/account/payments">View My Payments</Link>
         </Button>
         <Button asChild variant="outline" className="w-full">
@@ -244,171 +424,51 @@ export default function CheckoutPage() {
     </div>
   );
 
-  // Render order summary
-  const renderOrderSummary = () => (
-    <div
-      className={`bg-white rounded-lg p-6 border ${
-        step === "shipping" ? "sticky top-8" : ""
-      }`}
-    >
-      <h3 className="font-medium mb-4">Order Summary</h3>
-      <div className="space-y-4 mb-4">
-        {cartItems.map((item) => (
-          <div key={item.id} className="flex items-start">
-            <div className="w-12 h-12 relative flex-shrink-0">
-              <Image
-                src={item.image}
-                alt={item.name}
-                fill
-                className="object-cover rounded"
-              />
-            </div>
-            <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-gray-900">{item.name}</p>
-              <p className="text-xs text-gray-500">{item.type}</p>
-              <div className="flex justify-between text-sm mt-1">
-                <span>Qty: {item.quantity}</span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="border-t pt-4 space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span>Subtotal ({itemCount} items)</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Shipping</span>
-          <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Tax</span>
-          <span>${tax.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between font-bold text-base pt-2 border-t mt-2">
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render current step
-  const renderCurrentStep = () => {
-    switch (step) {
-      case "shipping":
-        return renderShippingStep();
-      case "payment":
-        return renderPaymentStep();
-      case "confirmation":
-        return renderConfirmationStep();
-      default:
-        return renderShippingStep();
-    }
-  };
-
-  // If cart is empty, redirect to cart page
-  if (cartItems.length === 0) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <SiteHeader />
-        <main className="flex-1 bg-[#f8f8f6] p-6 md:p-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg p-12 text-center border">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">
-                Your cart is empty
-              </h2>
-              <p className="text-gray-500 mb-8">
-                Please add some products to your cart before checking out.
-              </p>
-              <Button asChild>
-                <Link
-                  href="/buy"
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white py-2 px-6"
-                >
-                  Browse Products
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
       <main className="flex-1 bg-[#f8f8f6] p-6 md:p-12">
         <div className="max-w-4xl mx-auto">
-          {/* Checkout steps progress */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center space-x-1 mb-4">
-              <div className="flex items-center">
-                <div
-                  className={`rounded-full w-8 h-8 flex items-center justify-center ${
-                    step === "shipping" ||
-                    step === "payment" ||
-                    step === "confirmation"
-                      ? "bg-emerald-700 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  1
+          {/* Progress Indicator */}
+          <div className="mb-8 flex items-center justify-center space-x-1">
+            {["shipping", "payment", "confirmation"].map((lbl, i) => (
+              <React.Fragment key={lbl}>
+                <div className="flex items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      step === lbl ? "bg-emerald-700 text-white" : "bg-gray-200 text-gray-500"
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                  <span className="ml-2 text-sm font-medium">
+                    {lbl.charAt(0).toUpperCase() + lbl.slice(1)}
+                  </span>
                 </div>
-                <span className="ml-2 text-sm font-medium">Shipping</span>
-              </div>
-              <div className="w-12 h-1 bg-gray-200">
-                <div
-                  className={`h-full bg-emerald-700 ${
-                    step === "payment" || step === "confirmation"
-                      ? "w-full"
-                      : "w-0"
-                  }`}
-                ></div>
-              </div>
-              <div className="flex items-center">
-                <div
-                  className={`rounded-full w-8 h-8 flex items-center justify-center ${
-                    step === "payment" || step === "confirmation"
-                      ? "bg-emerald-700 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  2
-                </div>
-                <span className="ml-2 text-sm font-medium">Payment</span>
-              </div>
-              <div className="w-12 h-1 bg-gray-200">
-                <div
-                  className={`h-full bg-emerald-700 ${
-                    step === "confirmation" ? "w-full" : "w-0"
-                  }`}
-                ></div>
-              </div>
-              <div className="flex items-center">
-                <div
-                  className={`rounded-full w-8 h-8 flex items-center justify-center ${
-                    step === "confirmation"
-                      ? "bg-emerald-700 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  3
-                </div>
-                <span className="ml-2 text-sm font-medium">Confirmation</span>
-              </div>
-            </div>
+                {i < 2 && (
+                  <div className="w-12 h-1 bg-gray-200">
+                    <div
+                      className={`h-full bg-emerald-700 ${
+                        i < ["shipping","payment","confirmation"].indexOf(step)
+                          ? "w-full"
+                          : "w-0"
+                      }`}
+                    />
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
           </div>
 
-          {/* Main content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">{renderCurrentStep()}</div>
-            <div className="md:col-span-1">
-              {step !== "confirmation" && renderOrderSummary()}
+            <div className="md:col-span-2">
+              {step === "shipping"
+                ? renderShippingStep()
+                : step === "payment"
+                ? renderPaymentStep()
+                : renderConfirmationStep()}
             </div>
+            <div className="md:col-span-1">{renderOrderSummary()}</div>
           </div>
         </div>
       </main>
