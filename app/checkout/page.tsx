@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteHeader } from "@/components/site-header";
 import { useCart } from "@/lib/cartContext";
-import { saveShippingInfo, ShippingInfoInput } from "@/api/saveShippingInfo";
+import { createAddress, AddressInput } from "@/api/saveAddressInfo";
 import { createSubscription } from "@/api/createSubscription";
+import { createShipping } from "@/api/createShipping";
+import { createPayment } from "@/api/createPayment";
 
 type Step = "shipping" | "payment" | "confirmation";
 
@@ -21,8 +23,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal" | "apple-pay">("credit-card");
   const [loading, setLoading] = useState(false);
 
-  // Shipping info state
-  const [shippingInfo, setShippingInfo] = useState<ShippingInfoInput>({
+  // Address info state
+  const [addressInfo, setAddressInfo] = useState<AddressInput>({
     first_name: "",
     last_name:  "",
     email:      "",
@@ -30,7 +32,7 @@ export default function CheckoutPage() {
     city:       "",
     state:      "",
     zip:        "",
-    country:    "United States",
+    country:    "",
     phone:      "",
   });
 
@@ -39,44 +41,65 @@ export default function CheckoutPage() {
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
+  const [orderNumber, setOrderNumber] = useState<string>("");
 
   const { cartItems, subtotal, itemCount, clearCart } = useCart();
   const shippingCost = shippingMethod === "express" ? 12.95 : 0;
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
 
-  const handleCompletePurchase = async () => {
-    setLoading(true);
-    try {
-      // 1) Save shipping address
-      const addressId = await saveShippingInfo(shippingInfo);
+const handleCompletePurchase = async () => {
+  setLoading(true);
+  try {
+    // 1) Guardar la dirección
+    const addressId = await createAddress(addressInfo);
 
-      const productTypeMap = {
-        "Vitalis Vision":          "vision",
-        "Vitalis Neuro":           "neuro",
-        "Vitalis Fortify":         "fortify",
-        "Vitalis Complete Bundle": "complete",
-      };
+    // 2) Generar y guardar un orderNumber único
+    const num = `VT-${Math.floor(100000 + Math.random() * 900000)}`;
+    setOrderNumber(num);
 
-      // 2) Create one subscription per cart item
-      for (const item of cartItems) {
+    const productTypeMap = {
+      "Vitalis Vision":          "vision",
+      "Vitalis Neuro":           "neuro",
+      "Vitalis Fortify":         "fortify",
+      "Vitalis Complete Bundle": "complete",
+    };
 
-        await createSubscription({
-          address_id:   addressId,
-          plan_type:    item.type,
-          product_type: productTypeMap[item.name as keyof typeof productTypeMap],
-        });
-      }
+    // 3) Por cada ítem: crear suscripción, envío y pago
+    for (const item of cartItems) {
+      // 3a) Crear suscripción
+      const subscriptionId = await createSubscription({
+        address_id:   addressId,
+        plan_type:    item.type,
+        product_type: productTypeMap[item.name as keyof typeof productTypeMap],
+      });
 
-      // 3) Clear cart & go to confirmation
-      clearCart();
-      setStep("confirmation");
-    } catch (err) {
-      console.error("Error completing purchase:", err);
-    } finally {
-      setLoading(false);
+      // 3b) Agendar envío
+      await createShipping({
+        subscription_id: subscriptionId,
+        address_id:      addressId,
+        tracking_number: num,
+      });
+
+      // 3c) Registrar el pago
+      await createPayment({
+        subscription_id: subscriptionId,
+        amount:          item.price * item.quantity,
+        status:          "SUCCESS",
+        transaction_id:  num,               
+      });
     }
-  };
+
+    // 4) Limpiar carrito y pasar a confirmación
+    // clearCart();
+    setStep("confirmation");
+  } catch (err) {
+    console.error("Error completing purchase:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const renderOrderSummary = () => (
     <div className="bg-white rounded-lg p-6 border">
@@ -137,9 +160,9 @@ export default function CheckoutPage() {
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
-              value={shippingInfo.first_name}
+              value={addressInfo.first_name}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, first_name: e.target.value })
+                setAddressInfo({ ...addressInfo, first_name: e.target.value })
               }
               placeholder="First name"
               className="mt-1"
@@ -150,9 +173,9 @@ export default function CheckoutPage() {
             <Label htmlFor="lastName">Last Name</Label>
             <Input
               id="lastName"
-              value={shippingInfo.last_name}
+              value={addressInfo.last_name}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, last_name: e.target.value })
+                setAddressInfo({ ...addressInfo, last_name: e.target.value })
               }
               placeholder="Last name"
               className="mt-1"
@@ -164,9 +187,9 @@ export default function CheckoutPage() {
             <Input
               id="email"
               type="email"
-              value={shippingInfo.email}
+              value={addressInfo.email}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, email: e.target.value })
+                setAddressInfo({ ...addressInfo, email: e.target.value })
               }
               placeholder="Email address"
               className="mt-1"
@@ -177,9 +200,9 @@ export default function CheckoutPage() {
             <Label htmlFor="street">Street Address</Label>
             <Input
               id="street"
-              value={shippingInfo.street}
+              value={addressInfo.street}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, street: e.target.value })
+                setAddressInfo({ ...addressInfo, street: e.target.value })
               }
               placeholder="Street address"
               className="mt-1"
@@ -190,9 +213,9 @@ export default function CheckoutPage() {
             <Label htmlFor="city">City</Label>
             <Input
               id="city"
-              value={shippingInfo.city}
+              value={addressInfo.city}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, city: e.target.value })
+                setAddressInfo({ ...addressInfo, city: e.target.value })
               }
               placeholder="City"
               className="mt-1"
@@ -203,9 +226,9 @@ export default function CheckoutPage() {
             <Label htmlFor="state">State</Label>
             <Input
               id="state"
-              value={shippingInfo.state}
+              value={addressInfo.state}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, state: e.target.value })
+                setAddressInfo({ ...addressInfo, state: e.target.value })
               }
               placeholder="State"
               className="mt-1"
@@ -216,9 +239,9 @@ export default function CheckoutPage() {
             <Label htmlFor="zip">ZIP Code</Label>
             <Input
               id="zip"
-              value={shippingInfo.zip}
+              value={addressInfo.zip}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, zip: e.target.value })
+                setAddressInfo({ ...addressInfo, zip: e.target.value })
               }
               placeholder="ZIP code"
               className="mt-1"
@@ -229,9 +252,9 @@ export default function CheckoutPage() {
             <Label htmlFor="country">Country</Label>
             <Input
               id="country"
-              value={shippingInfo.country}
+              value={addressInfo.country}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, country: e.target.value })
+                setAddressInfo({ ...addressInfo, country: e.target.value })
               }
               className="mt-1"
             />
@@ -241,9 +264,9 @@ export default function CheckoutPage() {
             <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
-              value={shippingInfo.phone}
+              value={addressInfo.phone}
               onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, phone: e.target.value })
+                setAddressInfo({ ...addressInfo, phone: e.target.value })
               }
               placeholder="Phone number"
               className="mt-1"
@@ -410,7 +433,7 @@ export default function CheckoutPage() {
       </p>
       <div className="bg-emerald-50 rounded-lg p-4 mb-8 max-w-md mx-auto">
         <p className="text-emerald-800 font-medium">
-          Order #VT-{Math.floor(100000 + Math.random() * 900000)}
+          Order #{orderNumber}
         </p>
       </div>
       <div className="space-y-4">

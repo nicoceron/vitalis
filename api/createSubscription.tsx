@@ -30,7 +30,8 @@ export async function createSubscription(input: SubscriptionInput) {
       plan_type:    input.plan_type,
       product_type: input.product_type,
     })
-    .select();
+    .select()
+    .single();
 
   if (error) {
     console.error('Error inserting subscription:', {
@@ -42,5 +43,5 @@ export async function createSubscription(input: SubscriptionInput) {
     throw new Error(error.message);
   }
 
-  return data;
+  return data.id;
 }
