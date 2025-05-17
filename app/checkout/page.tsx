@@ -48,6 +48,21 @@ export default function CheckoutPage() {
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
 
+const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Quita todo lo que no sea dígito
+  let digits = e.target.value.replace(/\D/g, "");
+
+  // Limita a 4 dígitos (MMYY)
+  if (digits.length > 4) digits = digits.slice(0, 4);
+
+  // Inserta slash tras los dos primeros dígitos
+  if (digits.length > 2) {
+    digits = digits.slice(0, 2) + "/" + digits.slice(2);
+  }
+
+  setExpiry(digits);
+};
+
 const handleCompletePurchase = async () => {
   setLoading(true);
   try {
@@ -91,7 +106,7 @@ const handleCompletePurchase = async () => {
     }
 
     // 4) Limpiar carrito y pasar a confirmación
-    // clearCart();
+    clearCart();
     setStep("confirmation");
   } catch (err) {
     console.error("Error completing purchase:", err);
@@ -378,7 +393,8 @@ const handleCompletePurchase = async () => {
                   placeholder="MM/YY"
                   className="mt-1"
                   value={expiry}
-                  onChange={(e) => setExpiry(e.target.value)}
+                  onChange={handleExpiryChange}
+                  maxLength={5}
                 />
               </div>
               <div>

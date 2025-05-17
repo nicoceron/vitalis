@@ -33,7 +33,7 @@ type Subscription = {
   status: string;
   plan_type: string;
   product_type: string;
-  payments: Payment[];
+  payment: Payment[];  // <-- aquí plural opcional, pero la relación es `payment`
 };
 
 export default function PaymentsPage() {
@@ -42,7 +42,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
-  // 1) Get the current user
+  // 1) Obtener usuario
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user }, error }) => {
       if (error || !user) {
@@ -53,6 +53,7 @@ export default function PaymentsPage() {
     });
   }, [router]);
 
+  // 2) Cargar suscripciones + pagos
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
@@ -66,7 +67,7 @@ export default function PaymentsPage() {
         status,
         plan_type,
         product_type,
-        payments (
+        payment (
           id,
           amount,
           status,
@@ -77,16 +78,10 @@ export default function PaymentsPage() {
       .order('start_date', { ascending: false })
       .then(({ data, error }) => {
         if (error) {
-          console.error('Error fetching subscriptions:', {
-            message: error.message,
-            details: error.details,
-            hint:    error.hint,
-            code:    error.code,
-          });
+          console.error('Error fetching subscriptions:', error);
           setSubscriptions([]);
         } else {
-          // <-- aquí castea data al array de Subscription
-          setSubscriptions((data as unknown) as Subscription[]);
+          setSubscriptions(data as Subscription[]);
         }
         setLoading(false);
       });
@@ -100,10 +95,10 @@ export default function PaymentsPage() {
     });
 
   const getPaymentStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid':
+    switch (status.toUpperCase()) {
+      case 'PAID':
         return <Badge className="bg-emerald-100 text-emerald-800">Paid</Badge>;
-      case 'failed':
+      case 'FAILED':
         return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
       default:
         return (
@@ -160,9 +155,7 @@ export default function PaymentsPage() {
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-4">
-                        {getPaymentStatusBadge(
-                          sub.payments?.[0]?.status ?? 'pending'
-                        )}
+                        {getPaymentStatusBadge(sub.payment?.[0]?.status ?? 'PENDING')}
                         <Button variant="outline" size="sm">
                           View Details
                         </Button>
@@ -188,14 +181,14 @@ export default function PaymentsPage() {
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
-                            ${sub.payments?.[0]?.amount.toFixed(2) ?? 'N/A'}
+                            ${sub.payment?.[0]?.amount.toFixed(2) ?? 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {sub.payments?.[0]?.status ?? 'Pending'}
+                            {sub.payment?.[0]?.status ?? 'Pending'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {sub.payments?.[0]?.payment_date
-                              ? formatDate(sub.payments[0].payment_date)
+                            {sub.payment?.[0]?.payment_date
+                              ? formatDate(sub.payment[0].payment_date)
                               : ''}
                           </div>
                         </div>
@@ -204,9 +197,9 @@ export default function PaymentsPage() {
                   </CardContent>
                   <CardFooter className="flex justify-between bg-gray-50 border-t p-4">
                     <div className="flex items-center gap-2">
-                      {sub.payments?.[0]?.status === 'paid' ? (
+                      {sub.payment?.[0]?.status?.toLowerCase() === 'paid' ? (
                         <Package className="h-5 w-5 text-emerald-700" />
-                      ) : sub.payments?.[0]?.status === 'pending' ? (
+                      ) : sub.payment?.[0]?.status?.toLowerCase() === 'pending' ? (
                         <ShoppingBag className="h-5 w-5 text-blue-700" />
                       ) : (
                         <Truck className="h-5 w-5 text-red-700" />
