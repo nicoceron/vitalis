@@ -1,3 +1,8 @@
+"use client";
+
+// Use edge runtime to reduce serverless function count
+export const runtime = "edge";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

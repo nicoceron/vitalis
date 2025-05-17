@@ -3,6 +3,9 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
+// Use edge runtime to reduce serverless function count
+export const runtime = "edge";
+
 export default function RecipesPage() {
   return (
     <div className="flex flex-col min-h-screen">

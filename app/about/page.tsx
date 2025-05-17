@@ -19,6 +19,9 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// Use edge runtime to reduce serverless function count
+export const runtime = "edge";
+
 // FAQ Accordion Component
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
