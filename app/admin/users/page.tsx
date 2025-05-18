@@ -1,23 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  getAllUserAccounts,
+  createUserAccount,
+  updateUserAccount,
+  deleteUserAccount,
+} from "@/api/user";
 import { Users, Search, UserPlus, Filter } from "lucide-react";
-
-// Custom API fetcher for our consolidated API
-async function fetchAPI(action: string, data: Record<string, any> = {}) {
-  const response = await fetch("/api/vitalis-api", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action,
-      ...data,
-    }),
-  });
-
-  return await response.json();
-}
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -25,7 +15,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const data = await fetchAPI("getAllUsers");
+      const data = await getAllUserAccounts();
       setUsers(data || []);
     };
 
@@ -41,13 +31,9 @@ export default function AdminUsersPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
-      const success = await fetchAPI("updateUser", {
-        userId: id,
-        updates: { is_deleted: true },
-      });
+      const success = await deleteUserAccount(id);
       if (success) {
         setUsers((prev) => prev.filter((u) => u.id !== id));
       }
@@ -59,14 +45,10 @@ export default function AdminUsersPage() {
     const isAdmin = confirm("Make admin?");
 
     if (name) {
-      const updated = await fetchAPI("updateUser", {
-        userId: id,
-        updates: {
-          full_name: name,
-          is_admin: isAdmin,
-        },
+      const updated = await updateUserAccount(id, {
+        full_name: name,
+        is_admin: isAdmin,
       });
-
       if (updated) {
         setUsers((prev) =>
           prev.map((u) => (u.id === id ? { ...u, ...updated } : u))
@@ -81,15 +63,12 @@ export default function AdminUsersPage() {
     const isAdmin = confirm("Is admin?");
 
     if (full_name && email) {
-      const newUser = await fetchAPI("createUserAccount", {
-        userData: {
-          full_name,
-          email,
-          is_admin: isAdmin,
-          address_id: 1, // Dummy placeholder, update if necessary
-        },
+      const newUser = await createUserAccount({
+        full_name,
+        email,
+        is_admin: isAdmin,
+        address_id: 1, // Dummy placeholder, update if necessary
       });
-
       if (newUser) {
         setUsers((prev) => [newUser, ...prev]);
       }

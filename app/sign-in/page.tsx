@@ -6,9 +6,6 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
-// Use edge runtime to reduce serverless function count
-export const runtime = "edge";
-
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

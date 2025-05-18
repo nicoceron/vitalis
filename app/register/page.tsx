@@ -12,9 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
-// Use edge runtime to reduce serverless function count
-export const runtime = "edge";
-
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

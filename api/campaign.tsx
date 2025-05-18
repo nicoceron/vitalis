@@ -21,25 +21,6 @@ export async function createCampaign(
   return data as Campaign;
 }
 
-export async function getMarketingCampaigns() {
-  try {
-    const { data, error } = await supabase
-      .from("marketing_campaign")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching marketing campaigns:", error.message);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error("Unexpected error fetching marketing campaigns:", err);
-    return { success: false, error: "Unexpected error occurred" };
-  }
-}
-
 export async function getAllCampaigns(): Promise<Campaign[]> {
   const { data, error } = await supabase
     .from("campaign")

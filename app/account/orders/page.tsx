@@ -18,9 +18,6 @@ import {
 } from "@/components/ui/card";
 import { Package, ShoppingBag, Truck } from "lucide-react";
 
-// Use edge runtime to reduce serverless function count
-export const runtime = "edge";
-
 export default function PaymentsPage() {
   const { user, isLoading, subscriptions } = useAuth();
   const router = useRouter();

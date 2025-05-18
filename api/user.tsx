@@ -1,23 +1,23 @@
-import { supabase } from './apiClient';
-import type { UserAccount } from '@/lib/types';
+import { supabase } from "./apiClient";
+import type { UserAccount } from "@/lib/types";
 
 export type UserAccountCreateInput = Omit<
   UserAccount,
-  'id' | 'created_at' | 'last_sign_in_at'
+  "id" | "created_at" | "last_sign_in_at"
 >;
 
 export type UserAccountUpdateInput = Partial<
-  Omit<UserAccount, 'id' | 'created_at' | 'last_sign_in_at'>
+  Omit<UserAccount, "id" | "created_at" | "last_sign_in_at">
 >;
 
 export async function getAllUserAccounts(): Promise<UserAccount[]> {
   const { data, error } = await supabase
-    .from('user_account')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from("user_account")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching all user accounts:', error.message);
+    console.error("Error fetching all user accounts:", error.message);
     return [];
   }
 
@@ -26,13 +26,13 @@ export async function getAllUserAccounts(): Promise<UserAccount[]> {
 
 export async function getRecentUsers(limit = 10): Promise<UserAccount[]> {
   const { data, error } = await supabase
-    .from('user_account')
-    .select('*')
-    .order('created_at', { ascending: false })
+    .from("user_account")
+    .select("*")
+    .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) {
-    console.error('Error fetching recent users:', error.message);
+    console.error("Error fetching recent users:", error.message);
     return [];
   }
 
@@ -43,9 +43,9 @@ export async function getUserAccountById(
   id: string
 ): Promise<UserAccount | null> {
   const { data, error } = await supabase
-    .from('user_account')
-    .select('*')
-    .eq('id', id)
+    .from("user_account")
+    .select("*")
+    .eq("id", id)
     .single();
 
   if (error) {
@@ -60,9 +60,9 @@ export async function getUserAccountByEmail(
   email: string
 ): Promise<UserAccount | null> {
   const { data, error } = await supabase
-    .from('user_account')
-    .select('*')
-    .eq('email', email)
+    .from("user_account")
+    .select("*")
+    .eq("email", email)
     .single();
 
   if (error) {
@@ -80,13 +80,13 @@ export async function createUserAccount(
   userData: UserAccountCreateInput
 ): Promise<UserAccount | null> {
   const { data, error } = await supabase
-    .from('user_account')
+    .from("user_account")
     .insert([userData])
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating user account:', error.message);
+    console.error("Error creating user account:", error.message);
     return null;
   }
 
@@ -98,9 +98,9 @@ export async function updateUserAccount(
   updates: UserAccountUpdateInput
 ): Promise<UserAccount | null> {
   const { data, error } = await supabase
-    .from('user_account')
+    .from("user_account")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -113,7 +113,7 @@ export async function updateUserAccount(
 }
 
 export async function deleteUserAccount(id: string): Promise<boolean> {
-  const { error } = await supabase.from('user_account').delete().eq('id', id);
+  const { error } = await supabase.from("user_account").delete().eq("id", id);
 
   if (error) {
     console.error(`Error deleting user account with id ${id}:`, error.message);

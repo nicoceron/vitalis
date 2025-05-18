@@ -18,29 +18,6 @@ export async function getAllPayments(): Promise<Payment[]> {
   return data as Payment[];
 }
 
-export async function getUserPayments(userId: string) {
-  try {
-    const { data, error } = await supabase
-      .from("payment")
-      .select("*")
-      .eq("user_id", userId)
-      .order("payment_date", { ascending: false });
-
-    if (error) {
-      console.error(
-        `Error fetching payments for user ${userId}:`,
-        error.message
-      );
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error("Unexpected error fetching user payments:", err);
-    return { success: false, error: "Unexpected error occurred" };
-  }
-}
-
 export async function createPayment(
   data: PaymentCreateInput
 ): Promise<Payment | null> {

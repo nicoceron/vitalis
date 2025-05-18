@@ -4,23 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/lib/auth-context";
+import {
+  getAdminDashboardStats,
+  getRecentUsers,
+  getRecentSubscriptions,
+} from "@/api/adminDashboard";
 import { Users, ShoppingBag, CreditCard, Activity, Mail } from "lucide-react";
-
-// Custom API fetcher for our consolidated API
-async function fetchAPI(action: string, data: Record<string, any> = {}) {
-  const response = await fetch("/api/vitalis-api", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action,
-      ...data,
-    }),
-  });
-
-  return await response.json();
-}
 
 export default function AdminDashboard() {
   const { user, isLoading } = useAuth();
@@ -33,20 +22,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      try {
-        const [statsData, users, subscriptions] = await Promise.all([
-          fetchAPI("getAdminDashboardStats"),
-          fetchAPI("getRecentUsers", { limit: 5 }),
-          fetchAPI("getRecentSubscriptions", { limit: 5 }),
-        ]);
+      const [statsData, users, subscriptions] = await Promise.all([
+        getAdminDashboardStats(),
+        getRecentUsers(5),
+        getRecentSubscriptions(5),
+      ]);
 
-        setStats(statsData);
-        setRecentUsers(users);
-        setRecentSubscriptions(subscriptions);
-        setCampaigns(statsData?.campaigns ?? []);
-      } catch (error) {
-        console.error("Error fetching admin dashboard data:", error);
-      }
+      setStats(statsData);
+      setRecentUsers(users);
+      setRecentSubscriptions(subscriptions);
+      setCampaigns(statsData?.campaigns ?? []);
     };
 
     fetchDashboardData();

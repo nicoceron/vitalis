@@ -1,14 +1,10 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useState } from "react";
-
-// Use edge runtime to reduce serverless function count
-export const runtime = "edge";
 
 export default function IngredientsPage() {
   const [activeFilter, setActiveFilter] = useState("all");

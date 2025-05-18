@@ -29,9 +29,9 @@ type AuthContextType = {
   subscriptions: Subscription[];
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (
+    name: string,
     email: string,
-    password: string,
-    fullName: string
+    password: string
   ) => Promise<AuthResult>;
   logout: () => void;
 };
@@ -109,11 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: authUser.id,
         name:
           userAccount.full_name ||
-          authUser.user_metadata?.full_name ||
-          authUser.user_metadata?.name,
+          authUser.user_metadata.full_name ||
+          authUser.user_metadata.name,
         email:
           authUser.email ||
-          authUser.user_metadata?.email ||
+          authUser.user_metadata.email ||
           "no-email@unknown.com",
         isAdmin: userAccount.is_admin === true,
       };
@@ -143,14 +143,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (
+    name: string,
     email: string,
-    password: string,
-    fullName: string
+    password: string
   ): Promise<AuthResult> => {
     try {
       setIsLoading(true);
 
-      const response = await registerUser(email, password, fullName);
+      const response = await registerUser(name, email, password);
 
       if (!response.success) {
         return {
