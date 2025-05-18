@@ -6,14 +6,26 @@ import { registerUser, loginUser } from "../../api/auth";
 import {
   getUserSubscriptions,
   createSubscription,
+  getRecentSubscriptions as fetchRecentSubscriptions,
 } from "../../api/subscription";
 import { getAllProducts, getProductById } from "../../api/product";
 import { getUserPayments, createPayment } from "../../api/payment";
-import { getUserById, getAllUsers, updateUser } from "../../api/user";
+import {
+  getUserById,
+  getAllUsers,
+  updateUser,
+  getRecentUsers as fetchRecentUsers,
+  createUserAccount,
+} from "../../api/user";
 import { getMarketingCampaigns, createCampaign } from "../../api/campaign";
 import { createShippingInfo } from "../../api/createShipping";
 import { saveAddressInformation } from "../../api/saveAddressInfo";
-import { getDashboardData } from "../../api/adminDashboard";
+import {
+  getDashboardData,
+  getAdminDashboardStats,
+  getRecentUsers,
+  getRecentSubscriptions,
+} from "../../api/adminDashboard";
 
 const router = createRouter();
 
@@ -30,6 +42,20 @@ router.post(async (req, res) => {
     } else if (action === "login") {
       const { email, password } = data;
       result = await loginUser(email, password);
+    }
+
+    // Admin Dashboard actions
+    else if (action === "getAdminDashboardStats") {
+      result = await getAdminDashboardStats();
+      return res.status(200).json(result);
+    } else if (action === "getRecentUsers") {
+      const { limit } = data;
+      result = await getRecentUsers(limit || 10);
+      return res.status(200).json(result);
+    } else if (action === "getRecentSubscriptions") {
+      const { limit } = data;
+      result = await getRecentSubscriptions(limit || 10);
+      return res.status(200).json(result);
     }
 
     // Subscription actions
@@ -69,6 +95,10 @@ router.post(async (req, res) => {
     } else if (action === "updateUser") {
       const { userId, updates } = data;
       result = await updateUser(userId, updates);
+      return res.status(200).json(result);
+    } else if (action === "createUserAccount") {
+      const { userData } = data;
+      result = await createUserAccount(userData);
       return res.status(200).json(result);
     }
 

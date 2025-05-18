@@ -1,16 +1,26 @@
+"use client";
 
-'use client';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { SiteHeader } from "@/components/site-header";
+import { useAuth } from "@/lib/auth-context";
+import { Users, ShoppingBag, CreditCard, Activity, Mail } from "lucide-react";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { SiteHeader } from '@/components/site-header';
-import { useAuth } from '@/lib/auth-context';
-import {
-  getAdminDashboardStats,
-  getRecentUsers,
-  getRecentSubscriptions,
-} from '@/api/adminDashboard';
-import { Users, ShoppingBag, CreditCard, Activity, Mail } from 'lucide-react';
+// Custom API fetcher for our consolidated API
+async function fetchAPI(action: string, data: Record<string, any> = {}) {
+  const response = await fetch("/api/vitalis-api", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action,
+      ...data,
+    }),
+  });
+
+  return await response.json();
+}
 
 export default function AdminDashboard() {
   const { user, isLoading } = useAuth();
@@ -23,16 +33,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const [statsData, users, subscriptions] = await Promise.all([
-        getAdminDashboardStats(),
-        getRecentUsers(5),
-        getRecentSubscriptions(5),
-      ]);
+      try {
+        const [statsData, users, subscriptions] = await Promise.all([
+          fetchAPI("getAdminDashboardStats"),
+          fetchAPI("getRecentUsers", { limit: 5 }),
+          fetchAPI("getRecentSubscriptions", { limit: 5 }),
+        ]);
 
-      setStats(statsData);
-      setRecentUsers(users);
-      setRecentSubscriptions(subscriptions);
-      setCampaigns(statsData?.campaigns ?? []);
+        setStats(statsData);
+        setRecentUsers(users);
+        setRecentSubscriptions(subscriptions);
+        setCampaigns(statsData?.campaigns ?? []);
+      } catch (error) {
+        console.error("Error fetching admin dashboard data:", error);
+      }
     };
 
     fetchDashboardData();
@@ -40,43 +54,43 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!isLoading && (!user || !user.isAdmin)) {
-      router.push('/sign-in');
+      router.push("/sign-in");
     }
   }, [user, isLoading, router]);
 
   if (isLoading || !stats) {
     return (
-      <div className='flex-1 flex items-center justify-center h-screen'>
+      <div className="flex-1 flex items-center justify-center h-screen">
         Loading...
       </div>
     );
   }
 
   const activeCampaigns = campaigns.filter(
-    (campaign) => campaign.status === 'Active'
+    (campaign) => campaign.status === "Active"
   ).length;
 
   return (
-    <div className='flex flex-col min-h-screen'>
+    <div className="flex flex-col min-h-screen">
       <SiteHeader />
-      <main className='flex-1 p-6 md:p-10 bg-gray-50'>
-        <div className='max-w-7xl mx-auto'>
+      <main className="flex-1 p-6 md:p-10 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className='flex justify-between items-center mb-8'>
-            <h1 className='text-2xl md:text-3xl font-bold text-gray-900'>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Admin Dashboard
             </h1>
-            <div className='text-sm text-gray-500'>Welcome, {user?.name}</div>
+            <div className="text-sm text-gray-500">Welcome, {user?.name}</div>
           </div>
 
           {/* User Statistics */}
-          <SectionHeader icon={<Users size={24} />} title='User Statistics' />
+          <SectionHeader icon={<Users size={24} />} title="User Statistics" />
           <StatsGrid
             stats={[
-              { label: 'Total Users', value: stats.totalUsers },
-              { label: 'Standard Users', value: stats.standardUsers },
+              { label: "Total Users", value: stats.totalUsers },
+              { label: "Standard Users", value: stats.standardUsers },
               {
-                label: 'Admin Users',
+                label: "Admin Users",
                 value: stats.adminUsers,
                 highlight: true,
               },
@@ -86,17 +100,17 @@ export default function AdminDashboard() {
           {/* Sales Stats */}
           <SectionHeader
             icon={<ShoppingBag size={24} />}
-            title='Sales Statistics'
+            title="Sales Statistics"
           />
           <StatsGrid
             stats={[
               {
-                label: 'Total Sales',
+                label: "Total Sales",
                 value: `${stats.totalSales} subscriptions`,
               },
-              { label: 'Revenue', value: `$${stats.revenue.toLocaleString()}` },
+              { label: "Revenue", value: `$${stats.revenue.toLocaleString()}` },
               {
-                label: 'Average Order Value',
+                label: "Average Order Value",
                 value: `$${stats.averageOrderValue.toFixed(2)}`,
               },
             ]}
@@ -105,22 +119,22 @@ export default function AdminDashboard() {
           {/* Marketing Campaigns */}
           <SectionHeader
             icon={<Activity size={24} />}
-            title='Marketing Overview'
+            title="Marketing Overview"
           />
           <StatsGrid
             stats={[
               {
-                label: 'Active Campaigns',
+                label: "Active Campaigns",
                 value: `${activeCampaigns} / ${campaigns.length}`,
               },
               {
-                label: 'Total Budget',
+                label: "Total Budget",
                 value: `$${campaigns
                   .reduce((sum, c) => sum + c.budget, 0)
                   .toLocaleString()}`,
               },
               {
-                label: 'Total Conversions',
+                label: "Total Conversions",
                 value: campaigns
                   .reduce((sum, c) => sum + c.conversions, 0)
                   .toLocaleString(),
@@ -129,10 +143,10 @@ export default function AdminDashboard() {
           />
 
           {/* Recent Users + Subscriptions */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-8'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <RecentTable
-              title='Recent Users'
-              headers={['Name', 'Email', 'Join Date']}
+              title="Recent Users"
+              headers={["Name", "Email", "Join Date"]}
               rows={recentUsers.map((user) => [
                 user.full_name,
                 user.email,
@@ -141,8 +155,8 @@ export default function AdminDashboard() {
             />
 
             <RecentTable
-              title='Recent Subscriptions'
-              headers={['ID', 'User', 'Start Date', 'Plan', 'Status']}
+              title="Recent Subscriptions"
+              headers={["ID", "User", "Start Date", "Plan", "Status"]}
               rows={recentSubscriptions.map((sub) => [
                 sub.id,
                 `${sub.user_name} (${sub.user_email})`,
@@ -167,8 +181,8 @@ function SectionHeader({
   title: string;
 }) {
   return (
-    <h2 className='text-xl font-bold text-gray-900 mb-4 flex items-center'>
-      <div className='mr-2 text-emerald-700'>{icon}</div>
+    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+      <div className="mr-2 text-emerald-700">{icon}</div>
       {title}
     </h2>
   );
@@ -180,15 +194,15 @@ function StatsGrid({
   stats: { label: string; value: any; highlight?: boolean }[];
 }) {
   return (
-    <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       {stats.map((stat, i) => (
-        <div key={i} className='bg-white p-6 rounded-lg shadow-sm border'>
-          <div className='text-sm font-medium text-gray-500 mb-1'>
+        <div key={i} className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="text-sm font-medium text-gray-500 mb-1">
             {stat.label}
           </div>
           <div
             className={`text-2xl font-bold ${
-              stat.highlight ? 'text-emerald-700' : 'text-gray-900'
+              stat.highlight ? "text-emerald-700" : "text-gray-900"
             }`}
           >
             {stat.value}
@@ -209,29 +223,29 @@ function RecentTable({
   rows: (string | number)[][];
 }) {
   return (
-    <div className='bg-white p-6 rounded-lg shadow-sm border'>
-      <h2 className='text-lg font-medium mb-4'>{title}</h2>
-      <div className='overflow-x-auto'>
-        <table className='min-w-full divide-y divide-gray-200'>
+    <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <h2 className="text-lg font-medium mb-4">{title}</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
               {headers.map((h, i) => (
                 <th
                   key={i}
-                  className='px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className='divide-y divide-gray-200'>
+          <tbody className="divide-y divide-gray-200">
             {rows.map((row, i) => (
               <tr key={i}>
                 {row.map((cell, j) => (
                   <td
                     key={j}
-                    className='px-3 py-2 whitespace-nowrap text-sm text-gray-900'
+                    className="px-3 py-2 whitespace-nowrap text-sm text-gray-900"
                   >
                     {cell}
                   </td>
