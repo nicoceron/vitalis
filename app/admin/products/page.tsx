@@ -6,7 +6,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-} from "@/api/product";
+} from "@/api/routes/commerce";
 
 import { Package, Search, Plus, Filter } from "lucide-react";
 import { Product, ProductId, ProductCategory } from "@/lib/types";

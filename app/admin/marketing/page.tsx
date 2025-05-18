@@ -6,7 +6,7 @@ import {
   getAllCampaigns,
   deleteCampaign,
   updateCampaign,
-} from "@/api/campaign";
+} from "@/api/routes/admin";
 import {
   Search,
   PlusCircle,

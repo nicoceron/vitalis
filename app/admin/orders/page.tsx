@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getRecentSubscriptions } from "@/api/adminDashboard";
+import { getRecentSubscriptions } from "@/api/routes/commerce";
 import {
   CreditCard,
   Search,

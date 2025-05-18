@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import {
-  getAdminDashboardStats,
-  getRecentSubscriptions,
-} from "@/api/adminDashboard";
+import { getAdminDashboardStats } from "@/api/routes/admin";
+import { getRecentSubscriptions } from "@/api/routes/commerce";
 import {
   BarChart3,
   LineChart,

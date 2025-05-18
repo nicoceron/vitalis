@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/lib/auth-context";
-import {
-  getAdminDashboardStats,
-  getRecentUsers,
-  getRecentSubscriptions,
-} from "@/api/adminDashboard";
+import { getAdminDashboardStats } from "@/api/routes/admin";
+import { getRecentUsers } from "@/api/routes/auth";
+import { getRecentSubscriptions } from "@/api/routes/commerce";
 import { Users, ShoppingBag, CreditCard, Activity, Mail } from "lucide-react";
 
 export default function AdminDashboard() {
