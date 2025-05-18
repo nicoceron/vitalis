@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -6,10 +6,10 @@ import {
   useState,
   useEffect,
   type ReactNode,
-} from 'react';
-import type { Subscription } from './types';
-import { loginUser, registerUser } from '../api/auth';
-import { getUserSubscriptions } from '../api/subscription';
+} from "react";
+import type { Subscription } from "./types";
+import { loginUser, registerUser } from "../api/auth";
+import { getUserSubscriptions } from "../api/subscription";
 
 type User = {
   id: string;
@@ -39,7 +39,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Custom event to notify components of auth changes
-const AUTH_CHANGE_EVENT = 'auth_state_changed';
+const AUTH_CHANGE_EVENT = "auth_state_changed";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
     // Also dispatch a storage event to notify other tabs/windows
     window.dispatchEvent(
-      new StorageEvent('storage', {
-        key: 'vitalis_user',
+      new StorageEvent("storage", {
+        key: "vitalis_user",
         newValue: user ? JSON.stringify(user) : null,
         storageArea: localStorage,
       })
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function initializeUser() {
-      const storedUser = localStorage.getItem('vitalis_user');
+      const storedUser = localStorage.getItem("vitalis_user");
       if (storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser);
@@ -73,11 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (subsResponse.success) {
             setSubscriptions(subsResponse.data || []);
           } else {
-            console.error('Failed to fetch subscriptions:', subsResponse.error);
+            console.error("Failed to fetch subscriptions:", subsResponse.error);
           }
         } catch (error) {
-          console.error('Error parsing stored user:', error);
-          localStorage.removeItem('vitalis_user');
+          console.error("Error parsing stored user:", error);
+          localStorage.removeItem("vitalis_user");
         }
       }
       setIsLoading(false);
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         !response.data?.authUser ||
         !response.data?.userAccount
       ) {
-        return { success: false, error: response.error || 'Login failed' };
+        return { success: false, error: response.error || "Login failed" };
       }
 
       const { authUser, userAccount } = response.data;
@@ -114,12 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email:
           authUser.email ||
           authUser.user_metadata.email ||
-          'no-email@unknown.com',
+          "no-email@unknown.com",
         isAdmin: userAccount.is_admin === true,
       };
 
       setUser(formattedUser);
-      localStorage.setItem('vitalis_user', JSON.stringify(formattedUser));
+      localStorage.setItem("vitalis_user", JSON.stringify(formattedUser));
 
       // Fetch real subscriptions from Supabase
       const subsResponse = await getUserSubscriptions(authUser.id);
@@ -128,15 +128,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const subscriptions = subsResponse.data || [];
         setSubscriptions(subscriptions);
       } else {
-        console.error('Failed to fetch subscriptions:', subsResponse.error);
+        console.error("Failed to fetch subscriptions:", subsResponse.error);
       }
 
       notifyAuthChange();
 
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Unexpected error occurred' };
+      console.error("Login error:", error);
+      return { success: false, error: "Unexpected error occurred" };
     } finally {
       setIsLoading(false);
     }
@@ -155,14 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!response.success) {
         return {
           success: false,
-          error: response.error || 'Registration failed',
+          error: response.error || "Registration failed",
         };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Unexpected error occurred' };
+      console.error("Registration error:", error);
+      return { success: false, error: "Unexpected error occurred" };
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setSubscriptions([]);
-    localStorage.removeItem('vitalis_user');
+    localStorage.removeItem("vitalis_user");
 
     // Notify components about auth change
     notifyAuthChange();
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
