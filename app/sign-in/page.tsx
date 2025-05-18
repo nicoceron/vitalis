@@ -1,11 +1,13 @@
 "use client";
 
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+
+// Use edge runtime to reduce serverless function count
+export const runtime = "edge";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
