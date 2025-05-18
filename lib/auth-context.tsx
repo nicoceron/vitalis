@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import type { Subscription } from "./types";
-import { loginUser, registerUser } from "../api/auth";
-import { getUserSubscriptions } from "../api/subscription";
+import { loginUser, registerUser } from "@/api/routes/auth";
+import { getUserSubscriptions } from "@/api/routes/commerce";
 
 type User = {
   id: string;
