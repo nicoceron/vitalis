@@ -1,7 +1,6 @@
 // Consolidated API handler for Vitalis
 // This reduces the number of serverless functions by combining several API endpoints
 
-import { createRouter } from "next-connect";
 import { registerUser, loginUser } from "../../api/auth";
 import {
   getUserSubscriptions,
@@ -27,9 +26,12 @@ import {
   getRecentSubscriptions,
 } from "../../api/adminDashboard";
 
-const router = createRouter();
+export default async function handler(req, res) {
+  // Only allow POST requests
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-router.post(async (req, res) => {
   const { action, ...data } = req.body;
 
   try {
@@ -139,6 +141,4 @@ router.post(async (req, res) => {
       error: "An unexpected error occurred",
     });
   }
-});
-
-export default router.handler();
+}
