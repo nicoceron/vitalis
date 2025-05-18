@@ -141,18 +141,18 @@ export async function getAdminDashboardStats() {
     ]);
 
     const totalRevenue = (allPayments ?? []).reduce(
-      (acc, p) => acc + Number(p.amount),
+      (acc: number, p: { amount: number }) => acc + Number(p.amount),
       0
     );
     const totalSales = allPayments?.length ?? 0;
     const averageOrderValue = totalRevenue / (totalSales || 1);
 
     const revenueThisMonth = (paymentsThisMonth ?? []).reduce(
-      (acc, p) => acc + Number(p.amount),
+      (acc: number, p: { amount: number }) => acc + Number(p.amount),
       0
     );
     const revenueLastMonth = (paymentsLastMonth ?? []).reduce(
-      (acc, p) => acc + Number(p.amount),
+      (acc: number, p: { amount: number }) => acc + Number(p.amount),
       0
     );
 
