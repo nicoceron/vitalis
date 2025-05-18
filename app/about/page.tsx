@@ -1,4 +1,8 @@
 "use client";
+
+// Use edge runtime to reduce serverless function count
+export const runtime = "edge";
+
 import Image from "next/image";
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
@@ -18,9 +22,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-// Use edge runtime to reduce serverless function count
-export const runtime = "edge";
 
 // FAQ Accordion Component
 function FAQItem({ question, answer }: { question: string; answer: string }) {
