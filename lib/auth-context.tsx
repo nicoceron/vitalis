@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import type { Subscription } from "./types";
+import { loginUser, registerUser } from "../api/auth";
+import { getUserSubscriptions } from "../api/subscription";
 
 type User = {
   id: string;
@@ -66,14 +68,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
 
-          const response = await fetch(
-            `/api/subscription?userId=${parsedUser.id}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setSubscriptions(data || []);
+          const subsResponse = await getUserSubscriptions(parsedUser.id);
+
+          if (subsResponse.success) {
+            setSubscriptions(subsResponse.data || []);
           } else {
-            console.error("Failed to fetch subscriptions");
+            console.error("Failed to fetch subscriptions:", subsResponse.error);
           }
         } catch (error) {
           console.error("Error parsing stored user:", error);
@@ -93,29 +93,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "login",
-          email,
-          password,
-        }),
-      });
-
-      const result = await response.json();
+      const response = await loginUser(email, password);
 
       if (
-        !result.success ||
-        !result.data?.authUser ||
-        !result.data?.userAccount
+        !response.success ||
+        !response.data?.authUser ||
+        !response.data?.userAccount
       ) {
-        return { success: false, error: result.error || "Login failed" };
+        return { success: false, error: response.error || "Login failed" };
       }
 
-      const { authUser, userAccount } = result.data;
+      const { authUser, userAccount } = response.data;
 
       const formattedUser = {
         id: authUser.id,
@@ -133,15 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(formattedUser);
       localStorage.setItem("vitalis_user", JSON.stringify(formattedUser));
 
-      // Fetch subscriptions
-      const subsResponse = await fetch(
-        `/api/subscription?userId=${authUser.id}`
-      );
-      if (subsResponse.ok) {
-        const data = await subsResponse.json();
-        setSubscriptions(data || []);
+      // Fetch real subscriptions from Supabase
+      const subsResponse = await getUserSubscriptions(authUser.id);
+
+      if (subsResponse.success) {
+        const subscriptions = subsResponse.data || [];
+        setSubscriptions(subscriptions);
       } else {
-        console.error("Failed to fetch subscriptions");
+        console.error("Failed to fetch subscriptions:", subsResponse.error);
       }
 
       notifyAuthChange();
@@ -163,25 +150,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "register",
-          email,
-          password,
-          fullName,
-        }),
-      });
+      const response = await registerUser(email, password, fullName);
 
-      const result = await response.json();
-
-      if (!result.success) {
+      if (!response.success) {
         return {
           success: false,
-          error: result.error || "Registration failed",
+          error: response.error || "Registration failed",
         };
       }
 
