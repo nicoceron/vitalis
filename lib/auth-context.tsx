@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -6,10 +6,8 @@ import {
   useState,
   useEffect,
   type ReactNode,
-} from 'react';
-import type { Subscription } from './types';
-import { loginUser, registerUser } from '../api/auth';
-import { getUserSubscriptions } from '../api/subscription';
+} from "react";
+import type { Subscription } from "./types";
 
 type User = {
   id: string;
@@ -29,9 +27,9 @@ type AuthContextType = {
   subscriptions: Subscription[];
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (
-    name: string,
     email: string,
-    password: string
+    password: string,
+    fullName: string
   ) => Promise<AuthResult>;
   logout: () => void;
 };
@@ -39,7 +37,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Custom event to notify components of auth changes
-const AUTH_CHANGE_EVENT = 'auth_state_changed';
+const AUTH_CHANGE_EVENT = "auth_state_changed";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -52,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
     // Also dispatch a storage event to notify other tabs/windows
     window.dispatchEvent(
-      new StorageEvent('storage', {
-        key: 'vitalis_user',
+      new StorageEvent("storage", {
+        key: "vitalis_user",
         newValue: user ? JSON.stringify(user) : null,
         storageArea: localStorage,
       })
@@ -62,22 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function initializeUser() {
-      const storedUser = localStorage.getItem('vitalis_user');
+      const storedUser = localStorage.getItem("vitalis_user");
       if (storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
 
-          const subsResponse = await getUserSubscriptions(parsedUser.id);
-
-          if (subsResponse.success) {
-            setSubscriptions(subsResponse.data || []);
+          const response = await fetch(
+            `/api/subscription?userId=${parsedUser.id}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setSubscriptions(data || []);
           } else {
-            console.error('Failed to fetch subscriptions:', subsResponse.error);
+            console.error("Failed to fetch subscriptions");
           }
         } catch (error) {
-          console.error('Error parsing stored user:', error);
-          localStorage.removeItem('vitalis_user');
+          console.error("Error parsing stored user:", error);
+          localStorage.removeItem("vitalis_user");
         }
       }
       setIsLoading(false);
@@ -93,76 +93,102 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
 
-      const response = await loginUser(email, password);
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "login",
+          email,
+          password,
+        }),
+      });
+
+      const result = await response.json();
 
       if (
-        !response.success ||
-        !response.data?.authUser ||
-        !response.data?.userAccount
+        !result.success ||
+        !result.data?.authUser ||
+        !result.data?.userAccount
       ) {
-        return { success: false, error: response.error || 'Login failed' };
+        return { success: false, error: result.error || "Login failed" };
       }
 
-      const { authUser, userAccount } = response.data;
+      const { authUser, userAccount } = result.data;
 
       const formattedUser = {
         id: authUser.id,
         name:
           userAccount.full_name ||
-          authUser.user_metadata.full_name ||
-          authUser.user_metadata.name,
+          authUser.user_metadata?.full_name ||
+          authUser.user_metadata?.name,
         email:
           authUser.email ||
-          authUser.user_metadata.email ||
-          'no-email@unknown.com',
+          authUser.user_metadata?.email ||
+          "no-email@unknown.com",
         isAdmin: userAccount.is_admin === true,
       };
 
       setUser(formattedUser);
-      localStorage.setItem('vitalis_user', JSON.stringify(formattedUser));
+      localStorage.setItem("vitalis_user", JSON.stringify(formattedUser));
 
-      // Fetch real subscriptions from Supabase
-      const subsResponse = await getUserSubscriptions(authUser.id);
-
-      if (subsResponse.success) {
-        const subscriptions = subsResponse.data || [];
-        setSubscriptions(subscriptions);
+      // Fetch subscriptions
+      const subsResponse = await fetch(
+        `/api/subscription?userId=${authUser.id}`
+      );
+      if (subsResponse.ok) {
+        const data = await subsResponse.json();
+        setSubscriptions(data || []);
       } else {
-        console.error('Failed to fetch subscriptions:', subsResponse.error);
+        console.error("Failed to fetch subscriptions");
       }
 
       notifyAuthChange();
 
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Unexpected error occurred' };
+      console.error("Login error:", error);
+      return { success: false, error: "Unexpected error occurred" };
     } finally {
       setIsLoading(false);
     }
   };
 
   const register = async (
-    name: string,
     email: string,
-    password: string
+    password: string,
+    fullName: string
   ): Promise<AuthResult> => {
     try {
       setIsLoading(true);
 
-      const response = await registerUser(name, email, password);
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "register",
+          email,
+          password,
+          fullName,
+        }),
+      });
 
-      if (!response.success) {
+      const result = await response.json();
+
+      if (!result.success) {
         return {
           success: false,
-          error: response.error || 'Registration failed',
+          error: result.error || "Registration failed",
         };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Unexpected error occurred' };
+      console.error("Registration error:", error);
+      return { success: false, error: "Unexpected error occurred" };
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setSubscriptions([]);
-    localStorage.removeItem('vitalis_user');
+    localStorage.removeItem("vitalis_user");
 
     // Notify components about auth change
     notifyAuthChange();
@@ -196,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
