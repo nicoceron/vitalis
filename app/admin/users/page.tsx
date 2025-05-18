@@ -6,7 +6,7 @@ import {
   createUserAccount,
   updateUserAccount,
   deleteUserAccount,
-} from "@/api/user";
+} from "@/api/routes/auth";
 import { Users, Search, UserPlus, Filter } from "lucide-react";
 
 export default function AdminUsersPage() {

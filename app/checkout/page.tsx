@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,30 +10,41 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteHeader } from "@/components/site-header";
 import { useCart } from "@/lib/cartContext";
-import { createAddress, AddressInput } from "@/api/saveAddressInfo";
-import { createSubscription } from "@/api/createSubscription";
-import { createShipping } from "@/api/createShipping";
-import { createPayment } from "@/api/createPayment";
+import {
+  createAddress,
+  AddressInput,
+  ShippingInput,
+  createShipping,
+} from "@/api/routes/shipping";
+import {
+  createSubscriptionWithAuth,
+  SubscriptionInput,
+} from "@/api/routes/commerce";
+import { createPaymentWithAuth, PaymentInput } from "@/api/routes/commerce";
 
 type Step = "shipping" | "payment" | "confirmation";
 
 export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("shipping");
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal" | "apple-pay">("credit-card");
+  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">(
+    "standard"
+  );
+  const [paymentMethod, setPaymentMethod] = useState<
+    "credit-card" | "paypal" | "apple-pay"
+  >("credit-card");
   const [loading, setLoading] = useState(false);
 
   // Address info state
   const [addressInfo, setAddressInfo] = useState<AddressInput>({
     first_name: "",
-    last_name:  "",
-    email:      "",
-    street:     "",
-    city:       "",
-    state:      "",
-    zip:        "",
-    country:    "",
-    phone:      "",
+    last_name: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    phone: "",
   });
 
   // Credit-card fields
@@ -49,73 +59,73 @@ export default function CheckoutPage() {
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
 
-const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  // Quita todo lo que no sea dígito
-  let digits = e.target.value.replace(/\D/g, "");
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Quita todo lo que no sea dígito
+    let digits = e.target.value.replace(/\D/g, "");
 
-  // Limita a 4 dígitos (MMYY)
-  if (digits.length > 4) digits = digits.slice(0, 4);
+    // Limita a 4 dígitos (MMYY)
+    if (digits.length > 4) digits = digits.slice(0, 4);
 
-  // Inserta slash tras los dos primeros dígitos
-  if (digits.length > 2) {
-    digits = digits.slice(0, 2) + "/" + digits.slice(2);
-  }
-
-  setExpiry(digits);
-};
-
-const handleCompletePurchase = async () => {
-  setLoading(true);
-  try {
-    // 1) Guardar la dirección
-    const addressId = await createAddress(addressInfo);
-
-    // 2) Generar y guardar un orderNumber único
-    const num = `VT-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderNumber(num);
-
-    const productTypeMap = {
-      "Vitalis Vision":          "vision",
-      "Vitalis Neuro":           "neuro",
-      "Vitalis Fortify":         "fortify",
-      "Vitalis Complete Bundle": "complete",
-    };
-
-    // 3) Por cada ítem: crear suscripción, envío y pago
-    for (const item of cartItems) {
-      // 3a) Crear suscripción
-      const subscriptionId = await createSubscription({
-        address_id:   addressId,
-        plan_type:    item.type,
-        product_type: productTypeMap[item.name as keyof typeof productTypeMap],
-      });
-
-      // 3b) Agendar envío
-      await createShipping({
-        subscription_id: subscriptionId,
-        address_id:      addressId,
-        tracking_number: num,
-      });
-
-      // 3c) Registrar el pago
-      await createPayment({
-        subscription_id: subscriptionId,
-        amount:          item.price * item.quantity,
-        status:          "SUCCESS",
-        transaction_id:  num,               
-      });
+    // Inserta slash tras los dos primeros dígitos
+    if (digits.length > 2) {
+      digits = digits.slice(0, 2) + "/" + digits.slice(2);
     }
 
-    // 4) Limpiar carrito y pasar a confirmación
-    clearCart();
-    setStep("confirmation");
-  } catch (err) {
-    console.error("Error completing purchase:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+    setExpiry(digits);
+  };
 
+  const handleCompletePurchase = async () => {
+    setLoading(true);
+    try {
+      // 1) Guardar la dirección
+      const addressId = await createAddress(addressInfo);
+
+      // 2) Generar y guardar un orderNumber único
+      const num = `VT-${Math.floor(100000 + Math.random() * 900000)}`;
+      setOrderNumber(num);
+
+      const productTypeMap = {
+        "Vitalis Vision": "vision",
+        "Vitalis Neuro": "neuro",
+        "Vitalis Fortify": "fortify",
+        "Vitalis Complete Bundle": "complete",
+      };
+
+      // 3) Por cada ítem: crear suscripción, envío y pago
+      for (const item of cartItems) {
+        // 3a) Crear suscripción
+        const subscriptionId = await createSubscriptionWithAuth({
+          address_id: addressId,
+          plan_type: item.type,
+          product_type:
+            productTypeMap[item.name as keyof typeof productTypeMap],
+        });
+
+        // 3b) Agendar envío
+        await createShipping({
+          subscription_id: subscriptionId,
+          address_id: addressId,
+          tracking_number: num,
+        } as ShippingInput);
+
+        // 3c) Registrar el pago
+        await createPaymentWithAuth({
+          subscription_id: subscriptionId,
+          amount: item.price * item.quantity,
+          status: "SUCCESS",
+          transaction_id: num,
+        });
+      }
+
+      // 4) Limpiar carrito y pasar a confirmación
+      clearCart();
+      setStep("confirmation");
+    } catch (err) {
+      console.error("Error completing purchase:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderOrderSummary = () => (
     <div className="bg-white rounded-lg p-6 border">
@@ -152,7 +162,9 @@ const handleCompletePurchase = async () => {
         </div>
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span>{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
+          <span>
+            {shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Tax</span>
@@ -294,7 +306,9 @@ const handleCompletePurchase = async () => {
           <h3 className="font-medium mb-3">Shipping Method</h3>
           <RadioGroup
             value={shippingMethod}
-            onValueChange={(v) => setShippingMethod(v as "standard" | "express")}
+            onValueChange={(v) =>
+              setShippingMethod(v as "standard" | "express")
+            }
             className="space-y-3"
           >
             <div className="flex items-center justify-between border rounded-lg p-4">
@@ -427,7 +441,11 @@ const handleCompletePurchase = async () => {
       {renderOrderSummary()}
 
       <div className="mt-8 flex space-x-4">
-        <Button variant="outline" className="w-1/3" onClick={() => setStep("shipping")}>
+        <Button
+          variant="outline"
+          className="w-1/3"
+          onClick={() => setStep("shipping")}
+        >
           Back
         </Button>
         <Button
@@ -435,7 +453,8 @@ const handleCompletePurchase = async () => {
           disabled={loading}
           className="w-2/3 bg-emerald-800 text-white"
         >
-          {loading ? "Processing…" : "Complete Purchase"} <ArrowRight className="inline ml-2" />
+          {loading ? "Processing…" : "Complete Purchase"}{" "}
+          <ArrowRight className="inline ml-2" />
         </Button>
       </div>
     </div>
@@ -449,9 +468,7 @@ const handleCompletePurchase = async () => {
         Thank you! A confirmation email has been sent.
       </p>
       <div className="bg-emerald-50 rounded-lg p-4 mb-8 max-w-md mx-auto">
-        <p className="text-emerald-800 font-medium">
-          Order #{orderNumber}
-        </p>
+        <p className="text-emerald-800 font-medium">Order #{orderNumber}</p>
       </div>
       <div className="space-y-4">
         <Button asChild className="w-full bg-emerald-800 text-white">
@@ -476,7 +493,9 @@ const handleCompletePurchase = async () => {
                 <div className="flex items-center">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      step === lbl ? "bg-emerald-700 text-white" : "bg-gray-200 text-gray-500"
+                      step === lbl
+                        ? "bg-emerald-700 text-white"
+                        : "bg-gray-200 text-gray-500"
                     }`}
                   >
                     {i + 1}
@@ -489,7 +508,8 @@ const handleCompletePurchase = async () => {
                   <div className="w-12 h-1 bg-gray-200">
                     <div
                       className={`h-full bg-emerald-700 ${
-                        i < ["shipping","payment","confirmation"].indexOf(step)
+                        i <
+                        ["shipping", "payment", "confirmation"].indexOf(step)
                           ? "w-full"
                           : "w-0"
                       }`}
