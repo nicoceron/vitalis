@@ -136,7 +136,7 @@ export default function ResearchPage() {
                 <div className="md:w-1/3 lg:w-1/4">
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-emerald-50 mb-4">
                     <Image
-                      src="/vision.jpeg"
+                      src="/vision.png"
                       alt="Vitalis Vision product"
                       fill
                       className="object-cover"
@@ -211,7 +211,7 @@ export default function ResearchPage() {
                 <div className="md:w-1/3 lg:w-1/4">
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-emerald-50 mb-4">
                     <Image
-                      src="/neuro.jpeg"
+                      src="/neuro.png"
                       alt="Vitalis Neuro product"
                       fill
                       className="object-cover"
@@ -283,7 +283,7 @@ export default function ResearchPage() {
                 <div className="md:w-1/3 lg:w-1/4">
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-emerald-50 mb-4">
                     <Image
-                      src="/fortify.jpeg"
+                      src="/fortify.png"
                       alt="Vitalis Fortify product"
                       fill
                       className="object-cover"

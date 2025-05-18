@@ -139,16 +139,6 @@ export default function AboutPage() {
                   priority
                 />
               </div>
-              <div className="absolute -bottom-4 right-4 bg-white p-4 rounded shadow">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
-                    <Check size={16} />
-                  </div>
-                  <p className="text-sm font-medium text-gray-900">
-                    100% Natural Ingredients
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

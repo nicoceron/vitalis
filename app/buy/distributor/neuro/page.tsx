@@ -58,7 +58,7 @@ export default function DistributorNeuroPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/neuro.jpeg"
+              src="/neuro.png"
               alt="Vitalis Neuro product"
               fill
               className="object-cover"

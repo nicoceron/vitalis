@@ -43,7 +43,7 @@ export default function FortifyProductPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/fortify.jpeg"
+              src="/fortify.png"
               alt="Vitalis Fortify product"
               fill
               className="object-cover"

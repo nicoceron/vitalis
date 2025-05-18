@@ -42,7 +42,7 @@ export default function VisionProductPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/vision.jpeg"
+              src="/vision.png"
               alt="Vitalis Vision product"
               fill
               className="object-cover"
