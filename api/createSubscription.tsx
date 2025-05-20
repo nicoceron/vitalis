@@ -19,16 +19,29 @@ export async function createSubscription(input: SubscriptionInput) {
   if (authErr) throw new Error(`Auth error: ${authErr.message}`);
   if (!user) throw new Error('Usuario no autenticado');
 
+const today = new Date();
+const startDate = today.toISOString().slice(0,10);
+
+// si es mensual, la fecha de next payment = today + 30 días
+const nextPaymentDue =
+  input.plan_type.toLowerCase() === 'monthly subscription'
+    ? new Date(today.setDate(today.getDate() + 30))
+        .toISOString()
+        .slice(0,10)
+    : null;
+
+
   // 2) Insertar en `subscription`
   const { data, error } = await supabase
     .from('subscription')
     .insert({
       user_id:      user.id,
       address_id:   input.address_id,
-      start_date:   new Date().toISOString().slice(0, 10),
+      start_date:   startDate,
       status:       'ACTIVE',
       plan_type:    input.plan_type,
       product_type: input.product_type,
+      next_payment_due_date:  nextPaymentDue,
     })
     .select()
     .single();

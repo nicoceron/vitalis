@@ -47,15 +47,14 @@ export default function CheckoutPage() {
   const shippingCost = shippingMethod === "express" ? 12.95 : 0;
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
+  let lastPlanType: string | null = null;
 
 const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  // Quita todo lo que no sea dígito
+
   let digits = e.target.value.replace(/\D/g, "");
 
-  // Limita a 4 dígitos (MMYY)
   if (digits.length > 4) digits = digits.slice(0, 4);
 
-  // Inserta slash tras los dos primeros dígitos
   if (digits.length > 2) {
     digits = digits.slice(0, 2) + "/" + digits.slice(2);
   }
@@ -106,7 +105,10 @@ const handleCompletePurchase = async () => {
     }
 
     // 4) Limpiar carrito y pasar a confirmación
+    lastPlanType = cartItems[0].type;
+    console.log("Last plan type:", lastPlanType);
     clearCart();
+
     setStep("confirmation");
   } catch (err) {
     console.error("Error completing purchase:", err);
@@ -453,9 +455,19 @@ const handleCompletePurchase = async () => {
         </p>
       </div>
       <div className="space-y-4">
-        <Button asChild className="w-full bg-emerald-800 text-white">
-          <Link href="/account/payments">View My Payments</Link>
-        </Button>
+          <Button asChild className="w-full bg-emerald-800 text-white">
+            <Link
+              href={
+                lastPlanType === "Monthly Subscription"
+                  ? "/account/subscriptions"
+                  : "/account/payments"
+              }
+            >
+              {lastPlanType === "Monthly Subscription"
+                ? "View My Subscriptions"
+                : "View My Payments"}
+            </Link>
+          </Button>
         <Button asChild variant="outline" className="w-full">
           <Link href="/">Return to Home</Link>
         </Button>
