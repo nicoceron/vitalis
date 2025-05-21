@@ -33,6 +33,7 @@ export default function CheckoutPage() {
     "credit-card" | "paypal" | "apple-pay"
   >("credit-card");
   const [loading, setLoading] = useState(false);
+  const [lastPlanType, setLastPlanType] = useState<string | null>(null);
 
   // Address info state
   const [addressInfo, setAddressInfo] = useState<AddressInput>({
@@ -118,6 +119,7 @@ export default function CheckoutPage() {
       }
 
       // 4) Limpiar carrito y pasar a confirmación
+      setLastPlanType(cartItems[0].type);
       clearCart();
       setStep("confirmation");
     } catch (err) {
@@ -472,8 +474,18 @@ export default function CheckoutPage() {
       </div>
       <div className="space-y-4">
         <Button asChild className="w-full bg-emerald-800 text-white">
-          <Link href="/account/payments">View My Payments</Link>
-        </Button>
+            <Link
+              href={
+                lastPlanType === "Monthly Subscription"
+                  ? "/account/subscriptions"
+                  : "/account/payments"
+              }
+            >
+              {lastPlanType === "Monthly Subscription"
+                ? "View My Subscriptions"
+                : "View My Payments"}
+            </Link>
+          </Button>
         <Button asChild variant="outline" className="w-full">
           <Link href="/">Return to Home</Link>
         </Button>
