@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
   const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal" | "apple-pay">("credit-card");
   const [loading, setLoading] = useState(false);
+   const [lastPlanType, setLastPlanType] = useState<string | null>(null);
 
   // Address info state
   const [addressInfo, setAddressInfo] = useState<AddressInput>({
@@ -47,7 +48,6 @@ export default function CheckoutPage() {
   const shippingCost = shippingMethod === "express" ? 12.95 : 0;
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
-  let lastPlanType: string | null = null;
 
 const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
@@ -105,7 +105,7 @@ const handleCompletePurchase = async () => {
     }
 
     // 4) Limpiar carrito y pasar a confirmación
-    lastPlanType = cartItems[0].type;
+    setLastPlanType(cartItems[0].type);
     console.log("Last plan type:", lastPlanType);
     clearCart();
 
