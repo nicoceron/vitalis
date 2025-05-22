@@ -33,16 +33,20 @@ export default function SubscriptionsPage() {
   const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>(
     {}
   );
-
   const [selectedFrequency, setSelectedFrequency] = useState<
-    "monthly" | "annual"
-  >("monthly");
+    "Monthly Subscription" | "annual"
+  >("Monthly Subscription");
+
+  // Filtrar solo suscripciones mensuales
+  const monthlySubscriptions = subscriptions.filter(
+    (sub) => sub.plan_type === "Monthly Subscription"
+  );
 
   useEffect(() => {
     async function fetchProducts() {
       const data = await getAllProducts();
 
-      // Convert array to object indexed by product id
+      // Convertir array a objeto indexado por product.id
       const productMap = data.reduce(
         (acc: Partial<Record<ProductId, Product>>, product: Product) => {
           acc[product.id] = product;
@@ -63,10 +67,14 @@ export default function SubscriptionsPage() {
       : "—";
   }
 
-  function getSubscriptionPrice(product: Product, plan: "monthly" | "annual") {
-    if (plan === "annual") return product.price * 12 * 0.8; // 20% discount
+  function getSubscriptionPrice(
+    product: Product,
+    plan: "Monthly Subscription" | "annual"
+  ) {
+    if (plan === "annual") return product.price * 12 * 0.8; // 20% de descuento
     return product.price;
   }
+
   if (isLoading || !user) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -78,13 +86,12 @@ export default function SubscriptionsPage() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -99,7 +106,7 @@ export default function SubscriptionsPage() {
     }
   };
 
-  const getStatusColor = (status: string): string => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
         return "bg-emerald-100 text-emerald-800";
@@ -117,6 +124,7 @@ export default function SubscriptionsPage() {
       <SiteHeader />
       <main className="flex-1 bg-gray-50 py-12">
         <div className="container px-4 md:px-6">
+          {/* Header y botón de nueva suscripción */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-3xl font-bold">My Subscriptions</h1>
@@ -132,17 +140,17 @@ export default function SubscriptionsPage() {
             </Button>
           </div>
 
-          {subscriptions.length > 0 ? (
+          {monthlySubscriptions.length > 0 ? (
             <div className="space-y-8">
+              {/* Suscripciones activas mensuales */}
               <div>
                 <h2 className="text-xl font-semibold mb-4">
-                  Active Subscriptions
+                  Active Monthly Subscriptions
                 </h2>
                 <div className="grid gap-6 md:grid-cols-2">
-                  {subscriptions.map((subscription) => {
+                  {monthlySubscriptions.map((subscription) => {
                     const product =
                       products[subscription.product_type as ProductId];
-
                     return (
                       <Card key={subscription.id}>
                         <CardHeader className="pb-3">
@@ -183,9 +191,7 @@ export default function SubscriptionsPage() {
                                 Subscription Plan
                               </div>
                               <div className="font-medium">
-                                <div className="font-medium">
-                                  {formatPlanType(subscription.plan_type)}
-                                </div>
+                                {formatPlanType(subscription.plan_type)}
                               </div>
                             </div>
                           </div>
@@ -208,11 +214,9 @@ export default function SubscriptionsPage() {
                                   ? getSubscriptionPrice(
                                       product,
                                       subscription.plan_type
-                                    )
+                                    ).toFixed(2)
                                   : "—"}
-                                {subscription.plan_type === "annual"
-                                  ? "/year"
-                                  : "/month"}
+                                /month
                               </div>
                             </div>
                           </div>
@@ -233,45 +237,33 @@ export default function SubscriptionsPage() {
                 </div>
               </div>
 
+              {/* Historial de suscripciones mensuales */}
               <div className="border-t pt-8">
                 <h2 className="text-xl font-semibold mb-4">
-                  Subscription History
+                  Monthly Subscription History
                 </h2>
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Product
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Plan
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Started
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {subscriptions.map((subscription) => {
+                      {monthlySubscriptions.map((subscription) => {
                         const product =
                           products[subscription.product_type as ProductId];
-
                         return (
                           <tr key={`history-${subscription.id}`}>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -301,7 +293,7 @@ export default function SubscriptionsPage() {
                                   ? getSubscriptionPrice(
                                       product,
                                       subscription.plan_type
-                                    )
+                                    ).toFixed(2)
                                   : "—"}
                               </div>
                             </td>
@@ -336,11 +328,10 @@ export default function SubscriptionsPage() {
                 <CalendarIcon className="h-8 w-8 text-emerald-700" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                No Active Subscriptions
+                No Monthly Subscriptions
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                You don't have any active subscriptions yet. Subscribe to
-                Vitalis products for regular delivery and save.
+                You don’t have any active monthly subscriptions yet.
               </p>
               <Button
                 className="bg-emerald-700 hover:bg-emerald-800"
@@ -351,6 +342,7 @@ export default function SubscriptionsPage() {
             </div>
           )}
 
+          {/* Planes disponibles */}
           <div className="mt-16">
             <h2 className="text-2xl font-bold mb-6">
               Available Subscription Plans
@@ -358,7 +350,7 @@ export default function SubscriptionsPage() {
             <Tabs
               value={selectedFrequency}
               onValueChange={(v) =>
-                setSelectedFrequency(v as "monthly" | "annual")
+                setSelectedFrequency(v as "Monthly Subscription" | "annual")
               }
             >
               <div className="flex justify-between items-center mb-6">
@@ -408,7 +400,10 @@ export default function SubscriptionsPage() {
               <TabsContent value="annual" className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                   {Object.values(products).map((product) => {
-                    const annualPrice = getSubscriptionPrice(product, "annual");
+                    const annualPrice = getSubscriptionPrice(
+                      product,
+                      "annual"
+                    );
                     const monthlyEquivalent = (annualPrice / 12).toFixed(2);
 
                     return (

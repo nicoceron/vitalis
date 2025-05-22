@@ -75,6 +75,7 @@ export default function PaymentsPage() {
           payment_date
         )
       `)
+      .eq('plan_type', 'One-time purchase')
       .eq('user_id', userId)
       .order('start_date', { ascending: false })
       .then(({ data, error }) => {
@@ -128,9 +129,9 @@ export default function PaymentsPage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold">My Subscriptions</h1>
+              <h1 className="text-3xl font-bold">My Purchase</h1>
               <p className="text-gray-600 mt-1">
-                View and track your Vitalis subscription payments
+                View and track your Vitalis One-time purchase payments
               </p>
             </div>
             <Button
@@ -149,10 +150,10 @@ export default function PaymentsPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div>
                         <CardTitle className="text-lg">
-                          Subscription #{sub.id}
+                          One-time purchase #{sub.id}
                         </CardTitle>
                         <CardDescription>
-                          Started on {formatDate(sub.start_date)}
+                          Purchased on {formatDate(sub.start_date)}
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-4">
@@ -176,9 +177,9 @@ export default function PaymentsPage() {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{sub.plan_type}</h4>
-                          <p className="text-sm text-gray-500">
+                   {/*        <p className="text-sm text-gray-500">
                             Next Payment: {formatDate(sub.next_payment_due_date)}
-                          </p>
+                          </p> */}
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
