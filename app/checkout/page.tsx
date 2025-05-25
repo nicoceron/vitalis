@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteHeader } from "@/components/site-header";
 import { useCart } from "@/lib/cartContext";
+import { useRouter } from "next/navigation";
 import {
   createAddress,
   AddressInput,
@@ -54,11 +55,28 @@ export default function CheckoutPage() {
   const [cvc, setCvc] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const router = useRouter();
 
   const { cartItems, subtotal, itemCount, clearCart } = useCart();
   const shippingCost = shippingMethod === "express" ? 12.95 : 0;
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
+
+    
+
+  const handleClick = async () => {
+    const target =
+      lastPlanType === "Monthly Subscription" ||
+      lastPlanType === "Annual Subscription"
+        ? "/account/subscriptions"
+        : "/account/payments";
+
+    router.push(target);
+
+    setTimeout(() => {
+      clearCart();
+    }, 1000);
+  };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Quita todo lo que no sea dígito
@@ -120,7 +138,6 @@ export default function CheckoutPage() {
 
       // 4) Limpiar carrito y pasar a confirmación
       setLastPlanType(cartItems[0].type);
-      clearCart();
       setStep("confirmation");
     } catch (err) {
       console.error("Error completing purchase:", err);
@@ -473,19 +490,14 @@ export default function CheckoutPage() {
         <p className="text-emerald-800 font-medium">Order #{orderNumber}</p>
       </div>
       <div className="space-y-4">
-        <Button asChild className="w-full bg-emerald-800 text-white">
-            <Link
-              href={
-                lastPlanType === "Monthly Subscription"
-                  ? "/account/subscriptions"
-                  : "/account/payments"
-              }
-            >
-              {lastPlanType === "Monthly Subscription"
-                ? "View My Subscriptions"
-                : "View My Payments"}
-            </Link>
-          </Button>
+        <Button 
+          className="w-full bg-emerald-800 text-white"
+          onClick={handleClick}
+        >
+          {lastPlanType === "Monthly Subscription"
+            ? "View My Subscriptions"
+            : "View My Payments"}
+        </Button>
         <Button asChild variant="outline" className="w-full">
           <Link href="/">Return to Home</Link>
         </Button>

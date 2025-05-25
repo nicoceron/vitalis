@@ -1,6 +1,6 @@
 export type ProductId = 'vision' | 'neuro' | 'fortify' | 'complete';
 export type ProductCategory = 'Supplements' | 'Bundles';
-export type SubscriptionFrequency = 'Monthly Subscription' | 'annual';
+export type SubscriptionFrequency = 'Monthly Subscription' | 'Annual Subscription';
 
 export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
 

@@ -75,7 +75,8 @@ export default function PaymentsPage() {
           payment_date
         )
       `)
-      .eq('plan_type', 'One-time purchase')
+      .neq('plan_type', 'Monthly Subscription')
+      .neq('plan_type', 'Annual Subscription')
       .eq('user_id', userId)
       .order('start_date', { ascending: false })
       .then(({ data, error }) => {

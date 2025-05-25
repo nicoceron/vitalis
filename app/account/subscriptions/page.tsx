@@ -24,7 +24,7 @@ import type { Product, ProductId } from "@/lib/types";
 type Subscription = {
   id: number;
   status: string;
-  plan_type: "Monthly Subscription" | "annual";
+  plan_type: "Monthly Subscription" | "Annual Subscription";
   product_type: ProductId;
   next_payment_due_date: string;
   created_at: string;
@@ -35,7 +35,7 @@ export default function SubscriptionsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>({});
-  const [selectedFrequency, setSelectedFrequency] = useState<"Monthly Subscription" | "annual">("Monthly Subscription");
+  const [selectedFrequency, setSelectedFrequency] = useState<"Monthly Subscription" | "Annual Subscription">("Monthly Subscription");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -81,10 +81,14 @@ export default function SubscriptionsPage() {
     fetchProducts();
   }, []);
 
-  const monthlySubscriptions = subscriptions.filter((s) => s.plan_type === "Monthly Subscription");
+  const monthlySubscriptions  = subscriptions.filter(
+    (s) =>
+      s.plan_type === "Monthly Subscription" ||
+      s.plan_type === "Annual Subscription"
+  );
 
-  function getSubscriptionPrice(product: Product, plan: "Monthly Subscription" | "annual") {
-    return plan === "annual" ? product.price * 12 * 0.8 : product.price;
+  function getSubscriptionPrice(product: Product, plan: "Monthly Subscription" | "Annual Subscription") {
+    return plan === "Annual Subscription" ? product.price * 12 * 0.8 : product.price;
   }
 
   const formatDate = (dateString: string) =>
