@@ -62,7 +62,9 @@ export default function NewSubscriptionPage() {
   // Loading & confirmation
   const [loading, setLoading] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
-  const [lastPlanType, setLastPlanType] = useState<"Monthly Subscription" | "Annual Subscription">("Monthly Subscription");
+  const [lastPlanType, setLastPlanType] = useState<
+    "Monthly Subscription" | "Annual Subscription"
+  >("Monthly Subscription");
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -100,9 +102,10 @@ export default function NewSubscriptionPage() {
       setOrderNumber(num);
 
       // plan_type
-      const planType = frequency === "monthly"
-        ? "Monthly Subscription"
-        : "Annual Subscription";
+      const planType =
+        frequency === "monthly"
+          ? "Monthly Subscription"
+          : "Annual Subscription";
       setLastPlanType(planType);
 
       // 3) crea suscripción
@@ -141,26 +144,32 @@ export default function NewSubscriptionPage() {
   };
 
   const selectedPrice = getSubscriptionPrice(productId, frequency);
-  const monthlyEq = frequency === "annual" ? (selectedPrice / 12).toFixed(2) : null;
+  const monthlyEq =
+    frequency === "annual" ? (selectedPrice / 12).toFixed(2) : null;
 
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
       <main className="flex-1 bg-gray-50 py-12">
-        <div className="container px-4 md:px-6 max-w-6xl mx-auto">
+        <div className="container px-4 md:px-6 mx-auto">
           {/* Progress */}
           <div className="mb-8 flex items-center justify-center space-x-4">
             {["plan", "payment", "confirmation"].map((s, i) => (
               <React.Fragment key={s}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step === s || (step === "confirmation" && s !== "plan")
-                      ? "bg-emerald-700 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
+                      step === s ||
+                      (step === "confirmation" && s !== "plan")
+                        ? "bg-emerald-700 text-white"
+                        : "bg-gray-200 text-gray-500"
+                    }`}
+                  >
                     {i + 1}
                   </div>
-                  <span className="text-sm font-medium capitalize hidden sm:block">{s}</span>
+                  <span className="text-sm font-medium capitalize hidden sm:block">
+                    {s}
+                  </span>
                 </div>
                 {i < 2 && <div className="flex-1 h-px bg-gray-300 max-w-16" />}
               </React.Fragment>
@@ -171,26 +180,38 @@ export default function NewSubscriptionPage() {
           {step === "plan" && (
             <Card className="max-w-4xl mx-auto">
               <CardHeader>
-                <CardTitle className="text-3xl text-center">Choose your plan</CardTitle>
+                <CardTitle className="text-3xl text-center">
+                  Choose your plan
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="flex justify-center">
                   <Tabs
                     value={frequency}
-                    onValueChange={(v) => setFrequency(v as "monthly" | "annual")}
+                    onValueChange={(v) =>
+                      setFrequency(v as "monthly" | "annual")
+                    }
                     className="w-full max-w-md"
                   >
                     <TabsList className="grid grid-cols-2 w-full">
                       <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                      <TabsTrigger value="annual">Annual (Save 20%)</TabsTrigger>
+                      <TabsTrigger value="annual">
+                        Annual (Save 20%)
+                      </TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
-                
+
                 <div className="grid gap-4">
                   {Object.values(products).map((p) => {
-                    const price = getSubscriptionPrice(p.id as ProductId, frequency);
-                    const monthly = frequency === "annual" ? (price / 12).toFixed(2) : null;
+                    const price = getSubscriptionPrice(
+                      p.id as ProductId,
+                      frequency
+                    );
+                    const monthly =
+                      frequency === "annual"
+                        ? (price / 12).toFixed(2)
+                        : null;
                     return (
                       <div
                         key={p.id}
@@ -204,18 +225,24 @@ export default function NewSubscriptionPage() {
                         <div className="flex justify-between items-center">
                           <div className="flex-1">
                             <div className="flex items-center gap-3">
-                              <div className={`w-4 h-4 rounded-full border-2 ${
-                                productId === p.id 
-                                  ? "border-emerald-700 bg-emerald-700" 
-                                  : "border-gray-300"
-                              }`}>
+                              <div
+                                className={`w-4 h-4 rounded-full border-2 ${
+                                  productId === p.id
+                                    ? "border-emerald-700 bg-emerald-700"
+                                    : "border-gray-300"
+                                }`}
+                              >
                                 {productId === p.id && (
                                   <div className="w-full h-full rounded-full bg-white scale-50"></div>
                                 )}
                               </div>
-                              <h3 className="font-semibold text-lg">{p.name}</h3>
+                              <h3 className="font-semibold text-lg">
+                                {p.name}
+                              </h3>
                             </div>
-                            <p className="text-gray-600 mt-2 ml-7">{p.description}</p>
+                            <p className="text-gray-600 mt-2 ml-7">
+                              {p.description}
+                            </p>
                             {monthly && (
                               <p className="text-sm text-emerald-600 mt-1 ml-7 font-medium">
                                 ${monthly}/month billed annually
@@ -235,14 +262,15 @@ export default function NewSubscriptionPage() {
                     );
                   })}
                 </div>
-                
+
                 <div className="flex justify-center pt-6">
                   <Button
                     size="lg"
                     className="bg-emerald-700 hover:bg-emerald-800 px-8"
                     onClick={() => setStep("payment")}
                   >
-                    Continue to Payment <ArrowRight className="ml-2 h-4 w-4" />
+                    Continue to Payment{" "}
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -251,272 +279,343 @@ export default function NewSubscriptionPage() {
 
           {/* 2) Payment & Shipping */}
           {step === "payment" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {/* Form */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Billing & Shipping Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
-                    {/* Personal Information */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <User className="h-5 w-5 text-emerald-700" />
-                        <h3 className="font-semibold text-lg">Personal Information</h3>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="first_name">First Name *</Label>
-                          <Input
-                            id="first_name"
-                            value={addressInfo.first_name}
-                            onChange={e =>
-                              setAddressInfo({ ...addressInfo, first_name: e.target.value })
-                            }
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="last_name">Last Name *</Label>
-                          <Input
-                            id="last_name"
-                            value={addressInfo.last_name}
-                            onChange={e =>
-                              setAddressInfo({ ...addressInfo, last_name: e.target.value })
-                            }
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4 mt-4">
-                        <div>
-                          <Label htmlFor="email">Email Address *</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={addressInfo.email}
-                            onChange={e =>
-                              setAddressInfo({ ...addressInfo, email: e.target.value })
-                            }
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            id="phone"
-                            type="tel"
-                            value={addressInfo.phone}
-                            onChange={e =>
-                              setAddressInfo({ ...addressInfo, phone: e.target.value })
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Shipping Address */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="h-5 w-5 text-emerald-700" />
-                        <h3 className="font-semibold text-lg">Shipping Address</h3>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="street">Street Address *</Label>
-                          <Input
-                            id="street"
-                            value={addressInfo.street}
-                            onChange={e =>
-                              setAddressInfo({ ...addressInfo, street: e.target.value })
-                            }
-                            className="mt-1"
-                            required
-                          />
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Form */}
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-2xl">
+                        Billing & Shipping Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                      {/* Personal Information */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <User className="h-5 w-5 text-emerald-700" />
+                          <h3 className="font-semibold text-lg">
+                            Personal Information
+                          </h3>
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="city">City *</Label>
+                            <Label htmlFor="first_name">
+                              First Name *
+                            </Label>
                             <Input
-                              id="city"
-                              value={addressInfo.city}
-                              onChange={e =>
-                                setAddressInfo({ ...addressInfo, city: e.target.value })
+                              id="first_name"
+                              value={addressInfo.first_name}
+                              onChange={(e) =>
+                                setAddressInfo({
+                                  ...addressInfo,
+                                  first_name: e.target.value,
+                                })
                               }
                               className="mt-1"
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor="state">State/Province *</Label>
+                            <Label htmlFor="last_name">
+                              Last Name *
+                            </Label>
                             <Input
-                              id="state"
-                              value={addressInfo.state}
-                              onChange={e =>
-                                setAddressInfo({ ...addressInfo, state: e.target.value })
+                              id="last_name"
+                              value={addressInfo.last_name}
+                              onChange={(e) =>
+                                setAddressInfo({
+                                  ...addressInfo,
+                                  last_name: e.target.value,
+                                })
                               }
                               className="mt-1"
                               required
                             />
                           </div>
                         </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid sm:grid-cols-2 gap-4 mt-4">
                           <div>
-                            <Label htmlFor="zip">ZIP/Postal Code *</Label>
+                            <Label htmlFor="email">
+                              Email Address *
+                            </Label>
                             <Input
-                              id="zip"
-                              value={addressInfo.zip}
-                              onChange={e =>
-                                setAddressInfo({ ...addressInfo, zip: e.target.value })
+                              id="email"
+                              type="email"
+                              value={addressInfo.email}
+                              onChange={(e) =>
+                                setAddressInfo({
+                                  ...addressInfo,
+                                  email: e.target.value,
+                                })
                               }
                               className="mt-1"
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor="country">Country *</Label>
+                            <Label htmlFor="phone">
+                              Phone Number
+                            </Label>
                             <Input
-                              id="country"
-                              value={addressInfo.country}
-                              onChange={e =>
-                                setAddressInfo({ ...addressInfo, country: e.target.value })
+                              id="phone"
+                              type="tel"
+                              value={addressInfo.phone}
+                              onChange={(e) =>
+                                setAddressInfo({
+                                  ...addressInfo,
+                                  phone: e.target.value,
+                                })
                               }
                               className="mt-1"
-                              required
                             />
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Separator />
-
-                    {/* Payment Method */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <CreditCard className="h-5 w-5 text-emerald-700" />
-                        <h3 className="font-semibold text-lg">Payment Method</h3>
-                      </div>
-                      <div className="border rounded-lg p-6 bg-gray-50 space-y-4">
-                        <div>
-                          <Label htmlFor="cardNumber">Card Number *</Label>
-                          <Input
-                            id="cardNumber"
-                            placeholder="1234 5678 9012 3456"
-                            value={cardNumber}
-                            onChange={e => setCardNumber(e.target.value)}
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <Label htmlFor="expiry">Expiry Date *</Label>
-                            <Input
-                              id="expiry"
-                              placeholder="MM/YY"
-                              value={expiry}
-                              onChange={handleExpiryChange}
-                              maxLength={5}
-                              className="mt-1"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cvc">CVC *</Label>
-                            <Input
-                              id="cvc"
-                              placeholder="123"
-                              value={cvc}
-                              onChange={e => setCvc(e.target.value)}
-                              maxLength={4}
-                              className="mt-1"
-                              required
-                            />
-                          </div>
-                          <div></div>
-                        </div>
-                        <div>
-                          <Label htmlFor="nameOnCard">Name on Card *</Label>
-                          <Input
-                            id="nameOnCard"
-                            placeholder="John Doe"
-                            value={nameOnCard}
-                            onChange={e => setNameOnCard(e.target.value)}
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setStep("plan")}
-                        className="sm:w-auto w-full"
-                      >
-                        Back to Plan Selection
-                      </Button>
-                      <Button
-                        className="bg-emerald-700 hover:bg-emerald-800 sm:w-auto w-full flex-1"
-                        onClick={handleComplete}
-                        disabled={loading}
-                        size="lg"
-                      >
-                        {loading ? "Processing..." : "Complete Subscription"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Order Summary - Sticky */}
-              <div className="lg:col-span-1">
-                <Card className="lg:sticky lg:top-8">
-                  <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Plan Type</span>
-                        <span className="font-medium">
-                          {frequency === "monthly" ? "Monthly" : "Annual"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Product</span>
-                        <span className="font-medium">{products[productId].name}</span>
-                      </div>
                       <Separator />
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Total</span>
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-emerald-700">
-                            ${selectedPrice.toFixed(2)}
+
+                      {/* Shipping Address */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="h-5 w-5 text-emerald-700" />
+                          <h3 className="font-semibold text-lg">
+                            Shipping Address
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="street">
+                              Street Address *
+                            </Label>
+                            <Input
+                              id="street"
+                              value={addressInfo.street}
+                              onChange={(e) =>
+                                setAddressInfo({
+                                  ...addressInfo,
+                                  street: e.target.value,
+                                })
+                              }
+                              className="mt-1"
+                              required
+                            />
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {frequency === "monthly" ? "/month" : "/year"}
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="city">City *</Label>
+                              <Input
+                                id="city"
+                                value={addressInfo.city}
+                                onChange={(e) =>
+                                  setAddressInfo({
+                                    ...addressInfo,
+                                    city: e.target.value,
+                                  })
+                                }
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="state">
+                                State/Province *
+                              </Label>
+                              <Input
+                                id="state"
+                                value={addressInfo.state}
+                                onChange={(e) =>
+                                  setAddressInfo({
+                                    ...addressInfo,
+                                    state: e.target.value,
+                                  })
+                                }
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="zip">
+                                ZIP/Postal Code *
+                              </Label>
+                              <Input
+                                id="zip"
+                                value={addressInfo.zip}
+                                onChange={(e) =>
+                                  setAddressInfo({
+                                    ...addressInfo,
+                                    zip: e.target.value,
+                                  })
+                                }
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="country">Country *</Label>
+                              <Input
+                                id="country"
+                                value={addressInfo.country}
+                                onChange={(e) =>
+                                  setAddressInfo({
+                                    ...addressInfo,
+                                    country: e.target.value,
+                                  })
+                                }
+                                className="mt-1"
+                                required
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                      {monthlyEq && (
-                        <div className="text-sm text-gray-500 text-center bg-emerald-50 p-2 rounded">
-                          Equivalent to ${monthlyEq}/month
+
+                      <Separator />
+
+                      {/* Payment Method */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <CreditCard className="h-5 w-5 text-emerald-700" />
+                          <h3 className="font-semibold text-lg">
+                            Payment Method
+                          </h3>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                        <div className="border rounded-lg p-6 bg-gray-50 space-y-4">
+                          <div>
+                            <Label htmlFor="cardNumber">
+                              Card Number *
+                            </Label>
+                            <Input
+                              id="cardNumber"
+                              placeholder="1234 5678 9012 3456"
+                              value={cardNumber}
+                              onChange={(e) =>
+                                setCardNumber(e.target.value)
+                              }
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label htmlFor="expiry">
+                                Expiry Date *
+                              </Label>
+                              <Input
+                                id="expiry"
+                                placeholder="MM/YY"
+                                value={expiry}
+                                onChange={handleExpiryChange}
+                                maxLength={5}
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="cvc">CVC *</Label>
+                              <Input
+                                id="cvc"
+                                placeholder="123"
+                                value={cvc}
+                                onChange={(e) =>
+                                  setCvc(e.target.value)
+                                }
+                                maxLength={4}
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                            <div></div>
+                          </div>
+                          <div>
+                            <Label htmlFor="nameOnCard">
+                              Name on Card *
+                            </Label>
+                            <Input
+                              id="nameOnCard"
+                              placeholder="John Doe"
+                              value={nameOnCard}
+                              onChange={(e) =>
+                                setNameOnCard(e.target.value)
+                              }
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                        <Button
+                          variant="outline"
+                          onClick={() => setStep("plan")}
+                          className="sm:w-auto w-full"
+                        >
+                          Back to Plan Selection
+                        </Button>
+                        <Button
+                          className="bg-emerald-700 hover:bg-emerald-800 sm:w-auto w-full flex-1"
+                          onClick={handleComplete}
+                          disabled={loading}
+                          size="lg"
+                        >
+                          {loading
+                            ? "Processing..."
+                            : "Complete Subscription"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Order Summary */}
+                <div className="md:col-span-1">
+                  <Card className="sticky top-8">
+                    <CardHeader>
+                      <CardTitle>Order Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Plan Type</span>
+                          <span className="font-medium">
+                            {frequency === "monthly"
+                              ? "Monthly"
+                              : "Annual"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Product</span>
+                          <span className="font-medium">
+                            {products[productId].name}
+                          </span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Total</span>
+                          <div className="text-right">
+                            <div className="text-xl font-bold text-emerald-700">
+                              ${selectedPrice.toFixed(2)}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {frequency === "monthly"
+                                ? "/month"
+                                : "/year"}
+                            </div>
+                          </div>
+                        </div>
+                        {monthlyEq && (
+                          <div className="text-sm text-gray-500 text-center bg-emerald-50 p-2 rounded">
+                            Equivalent to ${monthlyEq}/month
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           )}
@@ -537,7 +636,10 @@ export default function NewSubscriptionPage() {
                   Your order has been successfully placed.
                 </p>
                 <p className="font-medium text-lg mb-8">
-                  Order Number: <span className="text-emerald-700">{orderNumber}</span>
+                  Order Number:{" "}
+                  <span className="text-emerald-700">
+                    {orderNumber}
+                  </span>
                 </p>
                 <div className="space-y-3">
                   <Button
@@ -545,18 +647,24 @@ export default function NewSubscriptionPage() {
                     size="lg"
                     onClick={() =>
                       router.push(
-                        lastPlanType === "Monthly Subscription" 
-                        || lastPlanType === "Annual Subscription"
+                        lastPlanType === "Monthly Subscription" ||
+                          lastPlanType === "Annual Subscription"
                           ? "/account/subscriptions"
                           : "/account/payments"
                       )
                     }
                   >
-                    {lastPlanType === "Monthly Subscription" || lastPlanType === "Annual Subscription"
+                    {lastPlanType === "Monthly Subscription" ||
+                    lastPlanType === "Annual Subscription"
                       ? "View My Subscriptions"
                       : "View My Payments"}
                   </Button>
-                  <Button asChild variant="outline" className="w-full" size="lg">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
                     <Link href="/">Return to Home</Link>
                   </Button>
                 </div>
