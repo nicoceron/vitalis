@@ -22,7 +22,7 @@ export default function NeuroProductPage() {
       description: "30-day supply",
       price: purchaseOption === "one-time" ? 89 : 75,
       quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/neuro.png",
       type:
         purchaseOption === "one-time"
           ? "One-time purchase"

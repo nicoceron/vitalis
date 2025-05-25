@@ -3,10 +3,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { Chatbot } from "@/components/chatbot";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen transform-none filter-none perspective-none">
       <SiteHeader />
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 bg-white">
@@ -318,6 +319,7 @@ export default function Home() {
         </section>
       </main>
       <SiteFooter />
+      <Chatbot />
     </div>
   );
 }

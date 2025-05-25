@@ -22,7 +22,7 @@ export default function VisionProductPage() {
       description: "30-day supply",
       price: purchaseOption === "one-time" ? 79 : 67,
       quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/vision.png",
       type:
         purchaseOption === "one-time"
           ? "One-time purchase"

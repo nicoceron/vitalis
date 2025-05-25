@@ -41,7 +41,7 @@ export default function DistributorVisionPage() {
       description: `${packageSize} package`,
       price: total,
       quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/vision.png",
       type: `Distributor ${packageSize} ($${pricePerUnit.toFixed(2)} per unit)`,
     };
 

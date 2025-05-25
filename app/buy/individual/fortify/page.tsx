@@ -23,7 +23,7 @@ export default function FortifyProductPage() {
       description: "30-day supply",
       price: purchaseOption === "one-time" ? 85 : 72,
       quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/fortify.png",
       type:
         purchaseOption === "one-time"
           ? "One-time purchase"

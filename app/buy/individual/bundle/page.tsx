@@ -27,7 +27,7 @@ export default function BundleProductPage() {
       description: "Vision, Neuro, and Fortify",
       price: purchaseOption === "one-time" ? 199 : 169,
       quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.jpg",
       type:
         purchaseOption === "one-time"
           ? "One-time purchase"
