@@ -8,6 +8,7 @@ export const metadata = {
   description:
     "Vitalis is a daily superfood powder packed with nutrient-rich fruits from Colombia and Costa Rica to boost your energy, support your immune system, and enhance your overall wellbeing.",
   generator: "v0.dev",
+  viewport: "width=device-width, initial-scale=1"
 };
 
 export default function RootLayout({
