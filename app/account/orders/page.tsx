@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Package, ShoppingBag, Truck } from "lucide-react";
 
-export default function PaymentsPage() {
+export default function OrdersPage() {
   const { user, isLoading, subscriptions } = useAuth();
   const router = useRouter();
 
@@ -71,18 +71,38 @@ export default function PaymentsPage() {
 
     console.log("Base product:", baseProduct);
 
-    // Check if the base product is one of our standard products
-    if (["vision", "neuro", "fortify"].includes(baseProduct)) {
+    // Try to determine the most likely image path based on the product type
+    const coreProducts = ["vision", "neuro", "fortify"];
+
+    // For standard products, try PNG first
+    if (coreProducts.includes(baseProduct)) {
       return `/${baseProduct}.png`;
     }
 
-    // For the bundle or complete product
+    // For bundle or complete products
     if (baseProduct === "complete" || baseProduct === "bundle") {
       return "/placeholder.jpg";
     }
 
-    // Default fallback
-    return "/placeholder.jpg";
+    // For distributor packages, extract the product name
+    if (productType.includes("distributor")) {
+      // Try to extract product name from distributor string (e.g., "neuro-distributor-30-pack")
+      const parts = productType.split("-");
+      if (parts.length > 1 && coreProducts.includes(parts[0])) {
+        return `/${parts[0]}.png`;
+      }
+    }
+
+    // Default fallbacks in order of preference
+    const preferredFallbacks = [
+      "/placeholder.jpg",
+      "/vision.png",
+      "/neuro.png",
+      "/fortify.png",
+    ];
+
+    // Return first available fallback
+    return preferredFallbacks[0];
   };
 
   return (
@@ -92,9 +112,9 @@ export default function PaymentsPage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold">My Purchase</h1>
+              <h1 className="text-3xl font-bold">My Orders & Payments</h1>
               <p className="text-gray-600 mt-1">
-                View and track your Vitalis purchases and subscriptions
+                View and track your Vitalis orders, purchases and subscriptions
               </p>
             </div>
             <Button
@@ -139,13 +159,22 @@ export default function PaymentsPage() {
                   <CardContent className="p-0">
                     <div className="divide-y">
                       <div className="flex items-center gap-4 p-4">
-                        <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden">
-                          <Image
-                            src={getProductImagePath(sub.product_type)}
-                            alt={`${sub.product_type} product image`}
-                            fill
-                            className="object-cover"
-                          />
+                        <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden border border-gray-200">
+                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 bg-gray-100 z-10">
+                            {sub.product_type || "unknown"}
+                          </div>
+                          <div className="absolute inset-0 z-20">
+                            <Image
+                              src={getProductImagePath(sub.product_type)}
+                              alt={`${sub.product_type} product image`}
+                              fill
+                              className="object-cover"
+                              onError={(e) => {
+                                console.error("Image failed to load:", e);
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          </div>
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{sub.plan_type}</h4>
