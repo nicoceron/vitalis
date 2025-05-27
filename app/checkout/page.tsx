@@ -62,8 +62,6 @@ export default function CheckoutPage() {
   const tax = Math.round((subtotal + shippingCost) * 0.08 * 100) / 100;
   const total = subtotal + shippingCost + tax;
 
-    
-
   const handleClick = async () => {
     const target =
       lastPlanType === "Monthly Subscription" ||
@@ -153,7 +151,12 @@ export default function CheckoutPage() {
         {cartItems.map((item) => (
           <div key={item.id} className="flex items-start">
             <Image
-              src={item.image}
+              src={
+                item.name.includes("Bundle") ||
+                item.name.includes("Variety Pack")
+                  ? "/pack.jpeg"
+                  : item.image
+              }
               alt={item.name}
               width={48}
               height={48}
@@ -490,7 +493,7 @@ export default function CheckoutPage() {
         <p className="text-emerald-800 font-medium">Order #{orderNumber}</p>
       </div>
       <div className="space-y-4">
-        <Button 
+        <Button
           className="w-full bg-emerald-800 text-white"
           onClick={handleClick}
         >

@@ -57,7 +57,12 @@ export default function CartPage() {
                       <div key={item.id} className="p-6 flex items-start">
                         <div className="w-20 h-20 relative flex-shrink-0">
                           <Image
-                            src={item.image}
+                            src={
+                              item.name.includes("Bundle") ||
+                              item.name.includes("Variety Pack")
+                                ? "/pack.jpeg"
+                                : item.image
+                            }
                             alt={item.name}
                             fill
                             className="object-cover rounded"

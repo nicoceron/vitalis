@@ -7,19 +7,20 @@ import { Chatbot } from "@/components/chatbot";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen transform-none filter-none perspective-none">
+    <div className="flex flex-col min-h-screen relative transform-none filter-none perspective-none">
       <SiteHeader />
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 bg-white">
           <div className="container grid md:grid-cols-2 gap-8 px-4 md:px-6">
             <div className="flex items-center justify-center">
               <div className="relative w-full max-w-xl aspect-square">
-                <Image
-                  src="/powder.jpeg?height=700&width=700"
-                  alt="Vitalis powder supplement in a glass with water"
-                  fill
-                  className="object-cover rounded-lg"
-                  priority
+                <video
+                  src="/Video_Ready_Here_s_the_Link.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="object-cover rounded-lg w-full h-full"
                 />
               </div>
             </div>
@@ -306,11 +307,13 @@ export default function Home() {
               </div>
               <div className="relative">
                 <div className="aspect-square w-full relative rounded-lg overflow-hidden">
-                  <Image
-                    src="/grandma.jpeg?height=600&width=600"
-                    alt="Vitalis powder being mixed in water"
-                    fill
-                    className="object-cover"
+                  <video
+                    src="/Video_Ready_Asian_Woman.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="object-cover w-full h-full"
                   />
                 </div>
               </div>

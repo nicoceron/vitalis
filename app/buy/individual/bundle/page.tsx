@@ -27,7 +27,7 @@ export default function BundleProductPage() {
       description: "Vision, Neuro, and Fortify",
       price: purchaseOption === "one-time" ? 199 : 169,
       quantity: 1,
-      image: "/placeholder.jpg",
+      image: "/pack.jpeg",
       type:
         purchaseOption === "one-time"
           ? "One-time purchase"
@@ -47,7 +47,7 @@ export default function BundleProductPage() {
         <div className="hidden md:block w-1/2 relative">
           <div className="absolute inset-0">
             <Image
-              src="/placeholder.jpg"
+              src="/pack.jpeg"
               alt="Vitalis Complete Bundle"
               fill
               className="object-cover"

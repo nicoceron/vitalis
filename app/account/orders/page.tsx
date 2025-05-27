@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { SiteHeader } from "@/components/site-header";
@@ -16,11 +15,38 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Package, ShoppingBag, Truck } from "lucide-react";
+import {
+  Package,
+  ShoppingBag,
+  CalendarIcon,
+  ShoppingCart,
+  Box,
+} from "lucide-react";
+import { getAllProducts } from "@/api/routes/commerce";
+import type { Product, ProductId } from "@/lib/types";
 
 export default function OrdersPage() {
   const { user, isLoading, subscriptions } = useAuth();
   const router = useRouter();
+  const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>(
+    {}
+  );
+
+  useEffect(() => {
+    async function fetchProducts() {
+      const data = await getAllProducts();
+      const productMap = data.reduce(
+        (acc: Partial<Record<ProductId, Product>>, product: Product) => {
+          acc[product.id] = product;
+          return acc;
+        },
+        {}
+      );
+      setProducts(productMap);
+    }
+
+    fetchProducts();
+  }, []);
 
   if (isLoading || !user) {
     return (
@@ -34,6 +60,7 @@ export default function OrdersPage() {
   }
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -42,132 +69,48 @@ export default function OrdersPage() {
   };
 
   const getPaymentStatusBadge = (status: string) => {
-    switch (status) {
+    if (!status) return null;
+
+    switch (status.toLowerCase()) {
       case "paid":
-        return <Badge className="bg-emerald-100 text-emerald-800">Paid</Badge>;
+      case "success":
+      case "completed":
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800">SUCCESS</Badge>
+        );
       case "failed":
-        return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
+        return <Badge className="bg-red-100 text-red-800">FAILED</Badge>;
       case "pending":
       default:
         return (
           <Badge className="bg-gray-100 text-gray-800 capitalize">
-            {status}
+            {status.toUpperCase()}
           </Badge>
         );
     }
   };
 
-  // Define static paths for product images to ensure they work
-  const PRODUCT_IMAGES = {
-    vision: "/vision.png",
-    neuro: "/neuro.png",
-    fortify: "/fortify.png",
-    placeholder: "/placeholder.jpg",
-  };
+  // Get appropriate icon based on product type
+  const getProductIcon = (productType: string | undefined) => {
+    if (!productType) return <Box className="h-full w-full text-emerald-600" />;
 
-  // Get product details based on price
-  const getProductDetails = (sub: any) => {
-    const amount = sub.payments?.[0]?.amount;
-
-    // Map prices to specific products
-    if (amount === 79) {
-      return {
-        name: "Vitalis Vision",
-        description: "Eye health & antioxidant support",
-        image: PRODUCT_IMAGES.vision,
-      };
-    } else if (amount === 89) {
-      return {
-        name: "Vitalis Neuro",
-        description: "Brain & cardiovascular support",
-        image: PRODUCT_IMAGES.neuro,
-      };
-    } else if (amount === 85) {
-      return {
-        name: "Vitalis Fortify",
-        description: "Metabolic balance & immune support",
-        image: PRODUCT_IMAGES.fortify,
-      };
-    } else if (amount === 199) {
-      return {
-        name: "Vitalis Bundle",
-        description: "Complete supplement package",
-        image: PRODUCT_IMAGES.placeholder,
-      };
-    } else if (amount === 2007) {
-      return {
-        name: "Neuro (Distributor)",
-        description: "30-pack distributor package",
-        image: PRODUCT_IMAGES.neuro,
-      };
-    } else if (amount === 1857) {
-      return {
-        name: "Vision (Distributor)",
-        description: "30-pack distributor package",
-        image: PRODUCT_IMAGES.vision,
-      };
-    } else if (amount === 1917) {
-      return {
-        name: "Fortify (Distributor)",
-        description: "30-pack distributor package",
-        image: PRODUCT_IMAGES.fortify,
-      };
+    if (productType.includes("vision")) {
+      return <Box className="h-full w-full text-blue-600" />;
     }
 
-    // Default fallback
-    return {
-      name: "Vitalis Product",
-      description: "Wellness supplement",
-      image: PRODUCT_IMAGES.placeholder,
-    };
-  };
-
-  const getProductImagePath = (productType: string | undefined) => {
-    console.log("Product type:", productType);
-    if (!productType) return "/placeholder.jpg";
-
-    // Extract base product name from various formats
-    let baseProduct = productType;
-
-    // Handle format like "vision-single" or "vision-subscription"
-    if (productType.includes("-")) {
-      baseProduct = productType.split("-")[0];
+    if (productType.includes("neuro")) {
+      return <Box className="h-full w-full text-purple-600" />;
     }
 
-    console.log("Base product:", baseProduct);
-
-    // Try to determine the most likely image path based on the product type
-    const coreProducts = ["vision", "neuro", "fortify"];
-
-    // For standard products, try PNG first
-    if (coreProducts.includes(baseProduct)) {
-      return `/${baseProduct}.png`;
+    if (productType.includes("fortify")) {
+      return <Box className="h-full w-full text-orange-600" />;
     }
 
-    // For bundle or complete products
-    if (baseProduct === "complete" || baseProduct === "bundle") {
-      return "/placeholder.jpg";
-    }
-
-    // For distributor packages, extract the product name
     if (productType.includes("distributor")) {
-      // Try to extract product name from distributor string (e.g., "neuro-distributor-30-pack")
-      const parts = productType.split("-");
-      if (parts.length > 1 && coreProducts.includes(parts[0])) {
-        return `/${parts[0]}.png`;
-      }
+      return <ShoppingCart className="h-full w-full text-emerald-600" />;
     }
 
-    // Default fallbacks in order of preference
-    const preferredFallbacks = [
-      "/placeholder.jpg",
-      "/vision.png",
-      "/neuro.png",
-      "/fortify.png",
-    ];
-
-    // Return first available fallback
-    return preferredFallbacks[0];
+    return <Box className="h-full w-full text-emerald-600" />;
   };
 
   return (
@@ -177,9 +120,9 @@ export default function OrdersPage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold">My Orders & Payments</h1>
+              <h1 className="text-3xl font-bold">My Purchase</h1>
               <p className="text-gray-600 mt-1">
-                View and track your Vitalis orders, purchases and subscriptions
+                View and track your Vitalis One-time purchase payments
               </p>
             </div>
             <Button
@@ -192,100 +135,95 @@ export default function OrdersPage() {
 
           {subscriptions.length > 0 ? (
             <div className="space-y-8">
-              {subscriptions.map((sub) => (
-                <Card key={sub.id} className="overflow-hidden">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {getProductDetails(sub).name} - Order #{sub.id}
-                        </CardTitle>
-                        <CardDescription>
-                          Purchased on {formatDate(sub.start_date)}
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {getPaymentStatusBadge(
-                          sub.payments?.[0]?.status ?? "pending"
-                        )}
+              {subscriptions.map((sub) => {
+                const product = products[sub.product_type as ProductId];
+                const latestPayment = sub.payments?.[0];
+                const isDistributor = sub.product_type?.includes("distributor");
 
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="divide-y">
-                      <div className="flex items-center gap-4 p-4">
-                        <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden border border-gray-200">
-                          {/* Show image based on price */}
-                          <Image
-                            src={getProductDetails(sub).image}
-                            alt={getProductDetails(sub).name}
-                            fill
-                            className="object-cover"
-                            priority
-                          />
+                return (
+                  <Card key={sub.id} className="overflow-hidden">
+                    <CardHeader className="bg-gray-50 border-b">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {isDistributor
+                              ? `Distributor 30-pack ($66.90 per unit)`
+                              : `One-time purchase #${sub.id}`}
+                          </CardTitle>
+                          <CardDescription>
+                            Purchased on {formatDate(sub.start_date)}
+                          </CardDescription>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium">
-                            {getProductDetails(sub).name}
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            {getProductDetails(sub).description}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            Order Amount: $
-                            {sub.payments?.[0]?.amount.toFixed(2)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">
-                            ${sub.payments?.[0]?.amount.toFixed(2)}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {sub.payments?.[0]?.status ?? "Pending"}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {formatDate(sub.payments?.[0]?.payment_date ?? "")}
-                          </div>
+                        <div className="flex items-center gap-4">
+                          {latestPayment &&
+                            getPaymentStatusBadge(latestPayment.status)}
+                          <Button variant="outline" size="sm">
+                            View Details
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between bg-gray-50 border-t p-4">
-                    <div className="flex items-center gap-2">
-                      {sub.payments?.[0]?.status === "paid" ? (
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="divide-y">
+                        <div className="flex items-center gap-4 p-4">
+                          <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden border border-gray-200 flex items-center justify-center bg-gray-50">
+                            {getProductIcon(sub.product_type)}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium">
+                              {isDistributor
+                                ? "Distributor 30-pack ($66.90 per unit)"
+                                : "One-time purchase"}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {product?.description ?? "Vitalis product"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            {latestPayment && (
+                              <>
+                                <div className="font-medium">
+                                  ${latestPayment.amount.toFixed(2)}
+                                </div>
+                                <div className="text-sm text-gray-500 font-medium">
+                                  {latestPayment.status.toUpperCase()}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {formatDate(latestPayment.payment_date)}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between bg-gray-50 border-t p-4">
+                      <div className="flex items-center gap-2">
                         <Package className="h-5 w-5 text-emerald-700" />
-                      ) : sub.payments?.[0]?.status === "pending" ? (
-                        <ShoppingBag className="h-5 w-5 text-blue-700" />
-                      ) : (
-                        <Package className="h-5 w-5 text-red-700" />
-                      )}
-                      <span className="text-sm capitalize">
-                        {sub.payments?.[0]?.status ?? "Pending"}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Status</div>
-                      <div className="font-bold text-lg">{sub.status}</div>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
+                        <span className="text-sm uppercase font-medium">
+                          {sub.status}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500">Status</div>
+                        <div className="font-bold text-lg uppercase">
+                          {sub.status}
+                        </div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
                 <ShoppingBag className="h-8 w-8 text-emerald-700" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">
-                No Subscriptions Yet
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">No Purchases Yet</h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                You haven't placed any subscriptions yet. Start shopping to see
-                your order history here.
+                You haven't made any purchases yet. Start shopping to see your
+                purchase history here.
               </p>
               <Button
                 className="bg-emerald-700 hover:bg-emerald-800"

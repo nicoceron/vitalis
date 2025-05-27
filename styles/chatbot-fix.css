@@ -1,0 +1,70 @@
+/* Chat button positioning */
+.chat-button-container {
+  position: fixed !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  z-index: 99999 !important;
+}
+
+@media (min-width: 640px) {
+  .chat-button-container {
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+  }
+}
+
+/* Position chat container */
+#chatbot-container {
+  position: fixed !important;
+  bottom: 1.5rem !important;
+  right: 1.5rem !important;
+  z-index: 99999 !important;
+  width: 384px !important; /* w-96 = 24rem = 384px */
+  max-width: 90vw !important;
+}
+
+/* Message styling and overflow handling */
+#chatbot-container .text-sm {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+}
+
+/* Fix button text wrapping */
+#chatbot-container button {
+  white-space: normal !important;
+  text-align: left !important;
+  height: auto !important;
+  min-height: 2.5rem !important;
+}
+
+/* Ensure line clamp works */
+#chatbot-container .line-clamp-2 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Mobile styles */
+@media (max-width: 640px) {
+  #chatbot-container {
+    width: calc(100% - 2rem) !important;
+    right: 1rem !important;
+    left: 1rem !important;
+  }
+}
+
+/* Small height screens */
+@media (max-height: 700px) {
+  #chatbot-container > div {
+    height: 85vh !important;
+    max-height: 85vh !important;
+  }
+}
+
+/* Ensure messages container scrolls properly */
+#chatbot-container .overflow-y-auto {
+  overflow-y: auto !important;
+}

@@ -16,7 +16,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, CheckCircle2, PauseCircle, RefreshCw } from "lucide-react";
+import {
+  CalendarIcon,
+  CheckCircle2,
+  PauseCircle,
+  RefreshCw,
+} from "lucide-react";
 import { getAllProducts } from "@/api/routes/commerce";
 import { supabase } from "@/api/apiClient";
 import type { Product, ProductId } from "@/lib/types";
@@ -34,8 +39,12 @@ export default function SubscriptionsPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>({});
-  const [selectedFrequency, setSelectedFrequency] = useState<"Monthly Subscription" | "Annual Subscription">("Monthly Subscription");
+  const [products, setProducts] = useState<Partial<Record<ProductId, Product>>>(
+    {}
+  );
+  const [selectedFrequency, setSelectedFrequency] = useState<
+    "Monthly Subscription" | "Annual Subscription"
+  >("Monthly Subscription");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,24 +80,32 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     async function fetchProducts() {
       const data = await getAllProducts();
-      const productMap = data.reduce((acc: Partial<Record<ProductId, Product>>, product: Product) => {
-        acc[product.id] = product;
-        return acc;
-      }, {});
+      const productMap = data.reduce(
+        (acc: Partial<Record<ProductId, Product>>, product: Product) => {
+          acc[product.id] = product;
+          return acc;
+        },
+        {}
+      );
       setProducts(productMap);
     }
 
     fetchProducts();
   }, []);
 
-  const monthlySubscriptions  = subscriptions.filter(
+  const monthlySubscriptions = subscriptions.filter(
     (s) =>
       s.plan_type === "Monthly Subscription" ||
       s.plan_type === "Annual Subscription"
   );
 
-  function getSubscriptionPrice(product: Product, plan: "Monthly Subscription" | "Annual Subscription") {
-    return plan === "Annual Subscription" ? product.price * 12 * 0.8 : product.price;
+  function getSubscriptionPrice(
+    product: Product,
+    plan: "Monthly Subscription" | "Annual Subscription"
+  ) {
+    return plan === "Annual Subscription"
+      ? product.price * 12 * 0.8
+      : product.price;
   }
 
   const formatDate = (dateString: string) =>
@@ -154,8 +171,13 @@ export default function SubscriptionsPage() {
             <div className="bg-white p-6 rounded shadow text-center">
               <CalendarIcon className="mx-auto text-emerald-700 h-10 w-10" />
               <h3 className="text-lg mt-4">No Monthly Subscriptions</h3>
-              <p className="text-gray-500 mt-2">You haven’t added any subscriptions yet.</p>
-              <Button className="mt-4 bg-emerald-700 hover:bg-emerald-800" onClick={() => router.push("/account/subscriptions/new")}>
+              <p className="text-gray-500 mt-2">
+                You haven’t added any subscriptions yet.
+              </p>
+              <Button
+                className="mt-4 bg-emerald-700 hover:bg-emerald-800"
+                onClick={() => router.push("/account/subscriptions/new")}
+              >
                 Browse Plans
               </Button>
             </div>
@@ -168,13 +190,21 @@ export default function SubscriptionsPage() {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle>{product?.name ?? "Unknown Product"}</CardTitle>
-                          <CardDescription>{product?.description ?? ""}</CardDescription>
+                          <CardTitle>
+                            {product?.name ?? "Unknown Product"}
+                          </CardTitle>
+                          <CardDescription>
+                            {product?.description ?? ""}
+                          </CardDescription>
                         </div>
-                        <Badge className={getStatusColor(subscription.status)} variant="secondary">
+                        <Badge
+                          className={getStatusColor(subscription.status)}
+                          variant="secondary"
+                        >
                           <span className="flex items-center gap-1">
                             {getStatusIcon(subscription.status)}
-                            {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                            {subscription.status.charAt(0).toUpperCase() +
+                              subscription.status.slice(1)}
                           </span>
                         </Badge>
                       </div>
@@ -192,15 +222,24 @@ export default function SubscriptionsPage() {
                         <div>
                           <div className="text-gray-500">Price</div>
                           <div className="font-medium mt-1">
-                            ${product ? getSubscriptionPrice(product, subscription.plan_type).toFixed(2) : "—"}/month
+                            $
+                            {product
+                              ? getSubscriptionPrice(
+                                  product,
+                                  subscription.plan_type
+                                ).toFixed(2)
+                              : "—"}
+                            /month
                           </div>
                         </div>
                       </div>
                     </CardContent>
 
                     <CardFooter className="flex justify-between pt-3">
-                      <Button variant="outline">Manage</Button>
-                      <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                      <Button
+                        variant="outline"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
                         Cancel
                       </Button>
                     </CardFooter>
