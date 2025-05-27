@@ -65,48 +65,61 @@ export default function OrdersPage() {
     placeholder: "/placeholder.jpg",
   };
 
-  const getProductImageByPrice = (sub: any) => {
-    // Get amount from the payment
+  // Get product details based on price
+  const getProductDetails = (sub: any) => {
     const amount = sub.payments?.[0]?.amount;
-    const type = sub.plan_type || "";
-    const productType = sub.product_type || "";
 
-    console.log("Determining image for:", {
-      amount,
-      type,
-      productType,
-    });
-
-    // Direct mapping if product_type contains vision, neuro, or fortify
-    if (productType.includes("vision")) return PRODUCT_IMAGES.vision;
-    if (productType.includes("neuro")) return PRODUCT_IMAGES.neuro;
-    if (productType.includes("fortify")) return PRODUCT_IMAGES.fortify;
-
-    // Check if it's a distributor purchase by plan type
-    if (type.includes("Distributor") || type.includes("distributor")) {
-      // Distributor prices can help identify the product
-      if (amount === 2007 || amount === 699) {
-        return PRODUCT_IMAGES.neuro; // Neuro distributor
-      } else if (amount === 1857 || amount === 649) {
-        return PRODUCT_IMAGES.vision; // Vision distributor
-      } else if (amount === 1917 || amount === 669) {
-        return PRODUCT_IMAGES.fortify; // Fortify distributor
-      }
-    }
-
-    // For regular products, identify by price
-    if (amount === 79 || amount === 67) {
-      return PRODUCT_IMAGES.vision; // Vision product
-    } else if (amount === 89 || amount === 75) {
-      return PRODUCT_IMAGES.neuro; // Neuro product
-    } else if (amount === 85 || amount === 72) {
-      return PRODUCT_IMAGES.fortify; // Fortify product
-    } else if (amount === 199 || amount === 169) {
-      return PRODUCT_IMAGES.placeholder; // Complete bundle
+    // Map prices to specific products
+    if (amount === 79) {
+      return {
+        name: "Vitalis Vision",
+        description: "Eye health & antioxidant support",
+        image: PRODUCT_IMAGES.vision,
+      };
+    } else if (amount === 89) {
+      return {
+        name: "Vitalis Neuro",
+        description: "Brain & cardiovascular support",
+        image: PRODUCT_IMAGES.neuro,
+      };
+    } else if (amount === 85) {
+      return {
+        name: "Vitalis Fortify",
+        description: "Metabolic balance & immune support",
+        image: PRODUCT_IMAGES.fortify,
+      };
+    } else if (amount === 199) {
+      return {
+        name: "Vitalis Bundle",
+        description: "Complete supplement package",
+        image: PRODUCT_IMAGES.placeholder,
+      };
+    } else if (amount === 2007) {
+      return {
+        name: "Neuro (Distributor)",
+        description: "30-pack distributor package",
+        image: PRODUCT_IMAGES.neuro,
+      };
+    } else if (amount === 1857) {
+      return {
+        name: "Vision (Distributor)",
+        description: "30-pack distributor package",
+        image: PRODUCT_IMAGES.vision,
+      };
+    } else if (amount === 1917) {
+      return {
+        name: "Fortify (Distributor)",
+        description: "30-pack distributor package",
+        image: PRODUCT_IMAGES.fortify,
+      };
     }
 
     // Default fallback
-    return PRODUCT_IMAGES.placeholder;
+    return {
+      name: "Vitalis Product",
+      description: "Wellness supplement",
+      image: PRODUCT_IMAGES.placeholder,
+    };
   };
 
   const getProductImagePath = (productType: string | undefined) => {
@@ -185,16 +198,10 @@ export default function OrdersPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div>
                         <CardTitle className="text-lg">
-                          {sub.plan_type === "Monthly Subscription" ||
-                          sub.plan_type === "Annual Subscription"
-                            ? `Subscription #${sub.id}`
-                            : `One-time purchase #${sub.id}`}
+                          {getProductDetails(sub).name} - Order #{sub.id}
                         </CardTitle>
                         <CardDescription>
-                          {sub.plan_type === "Monthly Subscription" ||
-                          sub.plan_type === "Annual Subscription"
-                            ? `Started on ${formatDate(sub.start_date)}`
-                            : `Purchased on ${formatDate(sub.start_date)}`}
+                          Purchased on {formatDate(sub.start_date)}
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-4">
@@ -214,32 +221,28 @@ export default function OrdersPage() {
                         <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden border border-gray-200">
                           {/* Show image based on price */}
                           <Image
-                            src={getProductImageByPrice(sub)}
-                            alt={`Product image`}
+                            src={getProductDetails(sub).image}
+                            alt={getProductDetails(sub).name}
                             fill
                             className="object-cover"
-                            onError={(e) => {
-                              console.error("Image failed to load:", e);
-                              e.currentTarget.style.opacity = "0.3";
-                            }}
+                            priority
                           />
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
-                            ${sub.payments?.[0]?.amount}
-                          </div>
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-medium">{sub.plan_type}</h4>
+                          <h4 className="font-medium">
+                            {getProductDetails(sub).name}
+                          </h4>
                           <p className="text-sm text-gray-500">
-                            Next Payment:{" "}
-                            {formatDate(sub.next_payment_due_date)}
+                            {getProductDetails(sub).description}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Type: {sub.product_type}
+                          <p className="text-sm text-gray-500 mt-1">
+                            Order Amount: $
+                            {sub.payments?.[0]?.amount.toFixed(2)}
                           </p>
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
-                            ${sub.payments?.[0]?.amount ?? "N/A"}
+                            ${sub.payments?.[0]?.amount.toFixed(2)}
                           </div>
                           <div className="text-sm text-gray-500">
                             {sub.payments?.[0]?.status ?? "Pending"}
