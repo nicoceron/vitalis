@@ -107,9 +107,7 @@ export default function PaymentsPage() {
                       <div className="flex items-center gap-4 p-4">
                         <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden">
                           <Image
-                            src={`/products/${
-                              sub.product_type || "placeholder"
-                            }.png`}
+                            src={`/${sub.product_type || "placeholder"}.png`}
                             alt={`{sub.plan_type} product image`}
                             fill
                             className="object-cover"
@@ -130,7 +128,7 @@ export default function PaymentsPage() {
                             {sub.payments?.[0]?.status ?? "Pending"}
                           </div>
                           <div className="text-sm text-gray-500">
-                            formatDate(sub.payment?.[0]?.payment_date ?? '')
+                            {formatDate(sub.payments?.[0]?.payment_date ?? "")}
                           </div>
                         </div>
                       </div>
