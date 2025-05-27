@@ -57,6 +57,58 @@ export default function OrdersPage() {
     }
   };
 
+  // Define static paths for product images to ensure they work
+  const PRODUCT_IMAGES = {
+    vision: "/vision.png",
+    neuro: "/neuro.png",
+    fortify: "/fortify.png",
+    placeholder: "/placeholder.jpg",
+  };
+
+  const getProductImageByPrice = (sub: any) => {
+    // Get amount from the payment
+    const amount = sub.payments?.[0]?.amount;
+    const type = sub.plan_type || "";
+    const productType = sub.product_type || "";
+
+    console.log("Determining image for:", {
+      amount,
+      type,
+      productType,
+    });
+
+    // Direct mapping if product_type contains vision, neuro, or fortify
+    if (productType.includes("vision")) return PRODUCT_IMAGES.vision;
+    if (productType.includes("neuro")) return PRODUCT_IMAGES.neuro;
+    if (productType.includes("fortify")) return PRODUCT_IMAGES.fortify;
+
+    // Check if it's a distributor purchase by plan type
+    if (type.includes("Distributor") || type.includes("distributor")) {
+      // Distributor prices can help identify the product
+      if (amount === 2007 || amount === 699) {
+        return PRODUCT_IMAGES.neuro; // Neuro distributor
+      } else if (amount === 1857 || amount === 649) {
+        return PRODUCT_IMAGES.vision; // Vision distributor
+      } else if (amount === 1917 || amount === 669) {
+        return PRODUCT_IMAGES.fortify; // Fortify distributor
+      }
+    }
+
+    // For regular products, identify by price
+    if (amount === 79 || amount === 67) {
+      return PRODUCT_IMAGES.vision; // Vision product
+    } else if (amount === 89 || amount === 75) {
+      return PRODUCT_IMAGES.neuro; // Neuro product
+    } else if (amount === 85 || amount === 72) {
+      return PRODUCT_IMAGES.fortify; // Fortify product
+    } else if (amount === 199 || amount === 169) {
+      return PRODUCT_IMAGES.placeholder; // Complete bundle
+    }
+
+    // Default fallback
+    return PRODUCT_IMAGES.placeholder;
+  };
+
   const getProductImagePath = (productType: string | undefined) => {
     console.log("Product type:", productType);
     if (!productType) return "/placeholder.jpg";
@@ -160,20 +212,19 @@ export default function OrdersPage() {
                     <div className="divide-y">
                       <div className="flex items-center gap-4 p-4">
                         <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden border border-gray-200">
-                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 bg-gray-100 z-10">
-                            {sub.product_type || "unknown"}
-                          </div>
-                          <div className="absolute inset-0 z-20">
-                            <Image
-                              src={getProductImagePath(sub.product_type)}
-                              alt={`${sub.product_type} product image`}
-                              fill
-                              className="object-cover"
-                              onError={(e) => {
-                                console.error("Image failed to load:", e);
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
+                          {/* Show image based on price */}
+                          <Image
+                            src={getProductImageByPrice(sub)}
+                            alt={`Product image`}
+                            fill
+                            className="object-cover"
+                            onError={(e) => {
+                              console.error("Image failed to load:", e);
+                              e.currentTarget.style.opacity = "0.3";
+                            }}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                            ${sub.payments?.[0]?.amount}
                           </div>
                         </div>
                         <div className="flex-1">
