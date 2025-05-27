@@ -57,6 +57,34 @@ export default function PaymentsPage() {
     }
   };
 
+  const getProductImagePath = (productType: string | undefined) => {
+    console.log("Product type:", productType);
+    if (!productType) return "/placeholder.jpg";
+
+    // Extract base product name from various formats
+    let baseProduct = productType;
+
+    // Handle format like "vision-single" or "vision-subscription"
+    if (productType.includes("-")) {
+      baseProduct = productType.split("-")[0];
+    }
+
+    console.log("Base product:", baseProduct);
+
+    // Check if the base product is one of our standard products
+    if (["vision", "neuro", "fortify"].includes(baseProduct)) {
+      return `/${baseProduct}.png`;
+    }
+
+    // For the bundle or complete product
+    if (baseProduct === "complete" || baseProduct === "bundle") {
+      return "/placeholder.jpg";
+    }
+
+    // Default fallback
+    return "/placeholder.jpg";
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
@@ -64,9 +92,9 @@ export default function PaymentsPage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold">My Payments</h1>
+              <h1 className="text-3xl font-bold">My Purchase</h1>
               <p className="text-gray-600 mt-1">
-                View and track your Vitalis subscription payments
+                View and track your Vitalis purchases and subscriptions
               </p>
             </div>
             <Button
@@ -85,10 +113,16 @@ export default function PaymentsPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div>
                         <CardTitle className="text-lg">
-                          Subscription #{sub.id}
+                          {sub.plan_type === "Monthly Subscription" ||
+                          sub.plan_type === "Annual Subscription"
+                            ? `Subscription #${sub.id}`
+                            : `One-time purchase #${sub.id}`}
                         </CardTitle>
                         <CardDescription>
-                          Started on {formatDate(sub.start_date)}
+                          {sub.plan_type === "Monthly Subscription" ||
+                          sub.plan_type === "Annual Subscription"
+                            ? `Started on ${formatDate(sub.start_date)}`
+                            : `Purchased on ${formatDate(sub.start_date)}`}
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-4">
@@ -107,8 +141,8 @@ export default function PaymentsPage() {
                       <div className="flex items-center gap-4 p-4">
                         <div className="w-16 h-16 relative shrink-0 rounded overflow-hidden">
                           <Image
-                            src={`/${sub.product_type || "placeholder"}.png`}
-                            alt={`{sub.plan_type} product image`}
+                            src={getProductImagePath(sub.product_type)}
+                            alt={`${sub.product_type} product image`}
                             fill
                             className="object-cover"
                           />
@@ -118,6 +152,9 @@ export default function PaymentsPage() {
                           <p className="text-sm text-gray-500">
                             Next Payment:{" "}
                             {formatDate(sub.next_payment_due_date)}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Type: {sub.product_type}
                           </p>
                         </div>
                         <div className="text-right">
