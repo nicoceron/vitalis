@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Instagram } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -9,7 +10,7 @@ export function SiteFooter() {
             <span className="text-xl font-bold text-emerald-700">Vitalis</span>
             <span className="text-xs align-top">®</span>
           </div>
-          <nav className="flex gap-4 sm:gap-6">
+          <nav className="flex gap-4 sm:gap-6 items-center">
             <Link
               href="#"
               className="text-xs hover:underline underline-offset-4"
@@ -27,6 +28,15 @@ export function SiteFooter() {
               className="text-xs hover:underline underline-offset-4"
             >
               Contact
+            </Link>
+            <Link
+              href="https://www.instagram.com/vitalispd/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 hover:text-emerald-700 transition-colors"
+              aria-label="Vitalis Instagram"
+            >
+              <Instagram size={18} />
             </Link>
           </nav>
         </div>

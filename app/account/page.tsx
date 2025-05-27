@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CalendarIcon, Package, User } from "lucide-react";
+import { CalendarIcon, Package, User, Instagram } from "lucide-react";
 
 export default function AccountPage() {
   const { user, isLoading, subscriptions } = useAuth();
@@ -202,7 +202,7 @@ export default function AccountPage() {
               </span>
               <span className="text-xs align-top">®</span>
             </div>
-            <nav className="flex gap-4 sm:gap-6">
+            <nav className="flex gap-4 sm:gap-6 items-center">
               <Link
                 href="#"
                 className="text-xs hover:underline underline-offset-4"
@@ -220,6 +220,15 @@ export default function AccountPage() {
                 className="text-xs hover:underline underline-offset-4"
               >
                 Contact
+              </Link>
+              <Link
+                href="https://www.instagram.com/vitalispd/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-emerald-700 transition-colors"
+                aria-label="Vitalis Instagram"
+              >
+                <Instagram size={18} />
               </Link>
             </nav>
           </div>
