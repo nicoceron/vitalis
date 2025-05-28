@@ -25,10 +25,9 @@ export default function Home() {
               </div>
             </div>
             <div className="flex flex-col justify-center space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal tracking-tighter">
-                Pure Tropical Energy,
-                <br />
+              <h1 className="text-4xl md:text-8xl lg:text-8xl font-normal tracking-tighter">
                 Natural Vitality
+                <br />
               </h1>
               <p className="text-lg md:text-xl text-gray-700 font-light  ">
                 Vitalis is a daily superfood powder packed with nutrient-rich
