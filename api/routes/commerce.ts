@@ -604,11 +604,8 @@ export async function createSubscriptionWithAuth(input: SubscriptionInput) {
 export async function cancelSubscriptionViaAPI(id: number) {
   try {
     // Get current session token
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-    if (sessionError || !session) {
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) {
       return { success: false, error: "Authentication required" };
     }
 

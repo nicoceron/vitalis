@@ -74,31 +74,24 @@ export default function AccountPage() {
   const handleEditProfile = async () => {
     setIsUpdatingProfile(true);
     try {
-      // Get the current auth session to get the JWT token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      console.log("Attempting to update profile with name:", profileData.name);
 
-      if (!session?.access_token) {
-        toast.error("Authentication required", {
-          description: "Please sign in again.",
-        });
-        return;
-      }
-
-      // Call our API to update the profile
+      // Call our simplified API to test basic functionality
       const response = await fetch("/api/update-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           name: profileData.name,
         }),
       });
 
+      console.log("API Response status:", response.status);
+      console.log("API Response ok:", response.ok);
+
       const result = await response.json();
+      console.log("API Result:", result);
 
       if (!response.ok || !result.success) {
         toast.error("Failed to update profile", {
