@@ -1,6 +1,10 @@
 import { supabase } from "../apiClient";
 import type { Product, ProductId, Payment, Subscription } from "@/lib/types";
-import { getBogotaDate, addMonthsToDate } from "@/lib/date-utils";
+import {
+  getBogotaDate,
+  addMonthsToDate,
+  getCurrentDate,
+} from "@/lib/date-utils";
 
 // Product types and functions
 export type ProductCreateInput = Omit<Product, "id">;
@@ -167,6 +171,7 @@ export type PaymentInput = {
   payment_date?: string; // ISO date, p.ej. "2025-05-17"
   status?: string; // p.ej. "PENDING", "COMPLETED"
   transaction_id?: string;
+  timezone?: string; // User's timezone
 };
 
 export async function createPaymentWithAuth(
@@ -180,10 +185,11 @@ export async function createPaymentWithAuth(
   if (authErr) throw new Error(`Auth error: ${authErr.message}`);
   if (!user) throw new Error("Usuario no autenticado");
 
-  const finalPaymentDate = input.payment_date ?? getBogotaDate();
+  // Use provided date or current date in user's timezone
+  const finalPaymentDate = input.payment_date ?? getCurrentDate(input.timezone);
   console.log("DEBUG API: Creating payment with date:", finalPaymentDate);
   console.log("DEBUG API: Input payment_date:", input.payment_date);
-  console.log("DEBUG API: getBogotaDate():", getBogotaDate());
+  console.log("DEBUG API: User timezone:", input.timezone || "auto-detected");
 
   // 2) Inserta el registro
   const { data, error } = await supabase
@@ -355,6 +361,171 @@ export async function deleteSubscription(id: number) {
   }
 }
 
+export async function cancelSubscription(id: number) {
+  try {
+    // Verify user is authenticated
+    const {
+      data: { user },
+      error: authErr,
+    } = await supabase.auth.getUser();
+    if (authErr) throw new Error(`Auth error: ${authErr.message}`);
+    if (!user) throw new Error("Usuario no autenticado");
+
+    console.log(
+      `DEBUG: Attempting to cancel subscription ${id} for user ${user.id}`
+    );
+
+    // First, let's check if the subscription exists and what its current state is
+    const { data: checkData, error: checkError } = await supabase
+      .from("subscription")
+      .select("*")
+      .eq("id", id);
+
+    console.log(
+      `DEBUG: Subscription check - data:`,
+      checkData,
+      `error:`,
+      checkError
+    );
+
+    if (checkError) {
+      console.error("Error checking subscription:", checkError);
+      return {
+        success: false,
+        error: `Failed to check subscription: ${checkError.message}`,
+      };
+    }
+
+    if (!checkData || checkData.length === 0) {
+      return { success: false, error: "Subscription not found" };
+    }
+
+    const subscription = checkData[0];
+    console.log(`DEBUG: Found subscription:`, subscription);
+    console.log(`DEBUG: Subscription status:`, subscription.status);
+    console.log(`DEBUG: Subscription user_id:`, subscription.user_id);
+
+    // Verify ownership
+    if (subscription.user_id !== user.id) {
+      return {
+        success: false,
+        error: "You can only cancel your own subscriptions",
+      };
+    }
+
+    if (subscription.status === "canceled") {
+      return { success: false, error: "Subscription is already canceled" };
+    }
+
+    // Try to update the subscription with explicit user_id and current status check
+    console.log(`DEBUG: About to run UPDATE query with conditions:`);
+    console.log(`DEBUG: - id = ${id}`);
+    console.log(`DEBUG: - user_id = ${user.id}`);
+    console.log(`DEBUG: - current status = ${subscription.status}`);
+    console.log(
+      `DEBUG: - status != "canceled" = ${subscription.status !== "canceled"}`
+    );
+
+    const { data, error, count } = await supabase
+      .from("subscription")
+      .update({ status: "canceled" })
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .neq("status", "canceled") // Only update if not already canceled
+      .select();
+
+    console.log(
+      `DEBUG: Update attempt - data:`,
+      data,
+      `error:`,
+      error,
+      `count:`,
+      count
+    );
+
+    if (error) {
+      console.error("Error updating subscription:", error);
+
+      // If the update failed due to RLS, let's try with explicit user_id match
+      if (error.code === "PGRST116" || error.code === "PGRST301") {
+        const { data: retryData, error: retryError } = await supabase
+          .from("subscription")
+          .update({ status: "canceled" })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select();
+
+        console.log(
+          `DEBUG: Retry update - data:`,
+          retryData,
+          `error:`,
+          retryError
+        );
+
+        if (retryError) {
+          return {
+            success: false,
+            error: `Unable to cancel subscription: ${retryError.message}. Please contact support.`,
+          };
+        }
+
+        if (!retryData || retryData.length === 0) {
+          return {
+            success: false,
+            error: "Subscription not found or permission denied",
+          };
+        }
+
+        return { success: true, data: retryData[0] };
+      }
+
+      return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      console.log(`DEBUG: No rows updated. Attempting alternative approach...`);
+
+      // Try updating without the status filter to see if that's the issue
+      const { data: altData, error: altError } = await supabase
+        .from("subscription")
+        .update({ status: "canceled" })
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select();
+
+      console.log(
+        `DEBUG: Alternative update - data:`,
+        altData,
+        `error:`,
+        altError
+      );
+
+      if (altError) {
+        return {
+          success: false,
+          error: `Update failed: ${altError.message}. Please contact support.`,
+        };
+      }
+
+      if (!altData || altData.length === 0) {
+        // This indicates a serious RLS policy issue
+        return {
+          success: false,
+          error:
+            "Unable to update subscription due to database permissions. Please contact support.",
+        };
+      }
+
+      return { success: true, data: altData[0] };
+    }
+
+    return { success: true, data: data[0] };
+  } catch (err) {
+    console.error("Unexpected error canceling subscription:", err);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
 export async function getSubscriptionById(id: number) {
   try {
     const { data, error } = await supabase
@@ -380,6 +551,7 @@ export type SubscriptionInput = {
   address_id: number;
   plan_type: string;
   product_type: string;
+  timezone?: string; // User's timezone
 };
 
 export async function createSubscriptionWithAuth(input: SubscriptionInput) {
@@ -391,9 +563,10 @@ export async function createSubscriptionWithAuth(input: SubscriptionInput) {
   if (authErr) throw new Error(`Auth error: ${authErr.message}`);
   if (!user) throw new Error("Usuario no autenticado");
 
-  const startDate = getBogotaDate();
+  // Use user's timezone if provided, otherwise detect from browser
+  const startDate = getCurrentDate(input.timezone);
   console.log("DEBUG API: Creating subscription with start_date:", startDate);
-  console.log("DEBUG API: getBogotaDate():", getBogotaDate());
+  console.log("DEBUG API: User timezone:", input.timezone || "auto-detected");
 
   // Calculate next payment due date based on plan type
   const monthsToAdd = input.plan_type === "Annual Subscription" ? 12 : 1;
@@ -426,4 +599,40 @@ export async function createSubscriptionWithAuth(input: SubscriptionInput) {
   }
 
   return data.id;
+}
+
+export async function cancelSubscriptionViaAPI(id: number) {
+  try {
+    // Get current session token
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const response = await fetch("/api/cancel-subscription", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ subscriptionId: id }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result.error || "Failed to cancel subscription",
+      };
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error calling cancel subscription API:", error);
+    return { success: false, error: "Network error occurred" };
+  }
 }

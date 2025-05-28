@@ -17,15 +17,31 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   CalendarIcon,
   CheckCircle2,
   PauseCircle,
   RefreshCw,
 } from "lucide-react";
-import { getAllProducts } from "@/api/routes/commerce";
+import {
+  getAllProducts,
+  cancelSubscriptionViaAPI,
+} from "@/api/routes/commerce";
 import { supabase } from "@/api/apiClient";
 import type { Product, ProductId } from "@/lib/types";
 import { formatDisplayDate } from "@/lib/date-utils";
+import { TimezoneDisplay } from "@/components/timezone-display";
+import { toast } from "sonner";
 
 type Subscription = {
   id: number;
@@ -47,6 +63,7 @@ export default function SubscriptionsPage() {
     "Monthly Subscription" | "Annual Subscription"
   >("Monthly Subscription");
   const [loading, setLoading] = useState(true);
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user }, error }) => {
@@ -110,7 +127,8 @@ export default function SubscriptionsPage() {
   }
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
       case "active":
         return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
       case "paused":
@@ -123,7 +141,8 @@ export default function SubscriptionsPage() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
       case "active":
         return "bg-emerald-100 text-emerald-800";
       case "paused":
@@ -132,6 +151,58 @@ export default function SubscriptionsPage() {
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleCancelSubscription = async (subscriptionId: number) => {
+    setCancelingId(subscriptionId);
+    try {
+      const result = await cancelSubscriptionViaAPI(subscriptionId);
+
+      if (result.success) {
+        // Update the local state to reflect the cancellation
+        setSubscriptions((prev) =>
+          prev.map((sub) =>
+            sub.id === subscriptionId ? { ...sub, status: "CANCELED" } : sub
+          )
+        );
+
+        // Show success message
+        toast.success("Subscription canceled successfully! 🎉", {
+          description:
+            "You'll continue to have access until your next billing date.",
+          duration: 5000,
+        });
+      } else {
+        console.error("Failed to cancel subscription:", result.error);
+
+        // Provide specific error messages
+        if (result.error?.includes("not found")) {
+          toast.error("Subscription not found", {
+            description:
+              "This subscription may have already been canceled or doesn't exist.",
+          });
+        } else if (
+          result.error?.includes("Authentication") ||
+          result.error?.includes("Invalid authentication")
+        ) {
+          toast.error("Authentication required", {
+            description: "Please sign in again and try again.",
+          });
+        } else {
+          toast.error("Failed to cancel subscription", {
+            description:
+              result.error || "An unexpected error occurred. Please try again.",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+      toast.error("Something went wrong", {
+        description: "Please check your connection and try again.",
+      });
+    } finally {
+      setCancelingId(null);
     }
   };
 
@@ -152,7 +223,10 @@ export default function SubscriptionsPage() {
       <main className="flex-1 bg-gray-50 py-12">
         <div className="container px-4 md:px-6">
           <div className="flex justify-between mb-6">
-            <h1 className="text-3xl font-bold">My Subscriptions</h1>
+            <div>
+              <h1 className="text-3xl font-bold">My Subscriptions</h1>
+              <TimezoneDisplay className="mt-2" />
+            </div>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800"
               onClick={() => router.push("/account/subscriptions/new")}
@@ -232,12 +306,51 @@ export default function SubscriptionsPage() {
                     </CardContent>
 
                     <CardFooter className="flex justify-between pt-3">
-                      <Button
-                        variant="outline"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        Cancel
-                      </Button>
+                      {subscription.status.toLowerCase() === "canceled" ? (
+                        <Button variant="outline" disabled>
+                          Canceled
+                        </Button>
+                      ) : (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={cancelingId === subscription.id}
+                            >
+                              {cancelingId === subscription.id
+                                ? "Canceling..."
+                                : "Cancel"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Cancel Subscription
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to cancel your{" "}
+                                {product?.name} subscription? This action cannot
+                                be undone. You will continue to have access
+                                until your next billing date.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>
+                                Keep Subscription
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleCancelSubscription(subscription.id)
+                                }
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Yes, Cancel Subscription
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </CardFooter>
                   </Card>
                 );

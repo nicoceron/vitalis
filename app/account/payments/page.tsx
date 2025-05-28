@@ -18,6 +18,7 @@ import {
 import { Package, ShoppingBag, Box, ShoppingCart } from "lucide-react";
 import { supabase } from "@/api/apiClient";
 import { formatDisplayDate } from "@/lib/date-utils";
+import { TimezoneDisplay } from "@/components/timezone-display";
 
 type Payment = {
   id: number;
@@ -157,6 +158,7 @@ export default function PaymentsPage() {
               <p className="text-gray-600 mt-1">
                 View and track your Vitalis One-time purchase payments
               </p>
+              <TimezoneDisplay className="mt-2" />
             </div>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800"

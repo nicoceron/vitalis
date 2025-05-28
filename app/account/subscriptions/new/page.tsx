@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { products, getSubscriptionPrice } from "@/lib/mock-data";
 import type { ProductId } from "@/lib/types";
 import { useAuth } from "@/lib/auth-context";
+import { useTimezone } from "@/hooks/useTimezone";
 
 import {
   createAddress,
@@ -34,6 +35,7 @@ type Step = "plan" | "payment" | "confirmation";
 
 export default function NewSubscriptionPage() {
   const { user, isLoading } = useAuth();
+  const { timezone } = useTimezone();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("plan");
@@ -108,11 +110,12 @@ export default function NewSubscriptionPage() {
           : "Annual Subscription";
       setLastPlanType(planType);
 
-      // 3) crea suscripción
+      // 3) crea suscripción con timezone del usuario
       const subInput: SubscriptionInput = {
         address_id: addrId,
         plan_type: planType,
         product_type: productId,
+        timezone: timezone,
       };
       const subscriptionId = await createSubscriptionWithAuth(subInput);
 
@@ -124,13 +127,14 @@ export default function NewSubscriptionPage() {
       };
       await createShipping(shipInput);
 
-      // 5) crea pago
+      // 5) crea pago con timezone del usuario
       const price = getSubscriptionPrice(productId, frequency);
       const payInput: PaymentInput = {
         subscription_id: subscriptionId,
         amount: price,
         status: "SUCCESS",
         transaction_id: num,
+        timezone: timezone,
       };
       await createPaymentWithAuth(payInput);
 
@@ -159,8 +163,7 @@ export default function NewSubscriptionPage() {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                      step === s ||
-                      (step === "confirmation" && s !== "plan")
+                      step === s || (step === "confirmation" && s !== "plan")
                         ? "bg-emerald-700 text-white"
                         : "bg-gray-200 text-gray-500"
                     }`}
@@ -209,9 +212,7 @@ export default function NewSubscriptionPage() {
                       frequency
                     );
                     const monthly =
-                      frequency === "annual"
-                        ? (price / 12).toFixed(2)
-                        : null;
+                      frequency === "annual" ? (price / 12).toFixed(2) : null;
                     return (
                       <div
                         key={p.id}
@@ -269,8 +270,7 @@ export default function NewSubscriptionPage() {
                     className="bg-emerald-700 hover:bg-emerald-800 px-8"
                     onClick={() => setStep("payment")}
                   >
-                    Continue to Payment{" "}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    Continue to Payment <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -300,9 +300,7 @@ export default function NewSubscriptionPage() {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="first_name">
-                              First Name *
-                            </Label>
+                            <Label htmlFor="first_name">First Name *</Label>
                             <Input
                               id="first_name"
                               value={addressInfo.first_name}
@@ -317,9 +315,7 @@ export default function NewSubscriptionPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="last_name">
-                              Last Name *
-                            </Label>
+                            <Label htmlFor="last_name">Last Name *</Label>
                             <Input
                               id="last_name"
                               value={addressInfo.last_name}
@@ -336,9 +332,7 @@ export default function NewSubscriptionPage() {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4 mt-4">
                           <div>
-                            <Label htmlFor="email">
-                              Email Address *
-                            </Label>
+                            <Label htmlFor="email">Email Address *</Label>
                             <Input
                               id="email"
                               type="email"
@@ -354,9 +348,7 @@ export default function NewSubscriptionPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="phone">
-                              Phone Number
-                            </Label>
+                            <Label htmlFor="phone">Phone Number</Label>
                             <Input
                               id="phone"
                               type="tel"
@@ -385,9 +377,7 @@ export default function NewSubscriptionPage() {
                         </div>
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="street">
-                              Street Address *
-                            </Label>
+                            <Label htmlFor="street">Street Address *</Label>
                             <Input
                               id="street"
                               value={addressInfo.street}
@@ -418,9 +408,7 @@ export default function NewSubscriptionPage() {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="state">
-                                State/Province *
-                              </Label>
+                              <Label htmlFor="state">State/Province *</Label>
                               <Input
                                 id="state"
                                 value={addressInfo.state}
@@ -437,9 +425,7 @@ export default function NewSubscriptionPage() {
                           </div>
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
-                              <Label htmlFor="zip">
-                                ZIP/Postal Code *
-                              </Label>
+                              <Label htmlFor="zip">ZIP/Postal Code *</Label>
                               <Input
                                 id="zip"
                                 value={addressInfo.zip}
@@ -484,25 +470,19 @@ export default function NewSubscriptionPage() {
                         </div>
                         <div className="border rounded-lg p-6 bg-gray-50 space-y-4">
                           <div>
-                            <Label htmlFor="cardNumber">
-                              Card Number *
-                            </Label>
+                            <Label htmlFor="cardNumber">Card Number *</Label>
                             <Input
                               id="cardNumber"
                               placeholder="1234 5678 9012 3456"
                               value={cardNumber}
-                              onChange={(e) =>
-                                setCardNumber(e.target.value)
-                              }
+                              onChange={(e) => setCardNumber(e.target.value)}
                               className="mt-1"
                               required
                             />
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <Label htmlFor="expiry">
-                                Expiry Date *
-                              </Label>
+                              <Label htmlFor="expiry">Expiry Date *</Label>
                               <Input
                                 id="expiry"
                                 placeholder="MM/YY"
@@ -519,9 +499,7 @@ export default function NewSubscriptionPage() {
                                 id="cvc"
                                 placeholder="123"
                                 value={cvc}
-                                onChange={(e) =>
-                                  setCvc(e.target.value)
-                                }
+                                onChange={(e) => setCvc(e.target.value)}
                                 maxLength={4}
                                 className="mt-1"
                                 required
@@ -530,16 +508,12 @@ export default function NewSubscriptionPage() {
                             <div></div>
                           </div>
                           <div>
-                            <Label htmlFor="nameOnCard">
-                              Name on Card *
-                            </Label>
+                            <Label htmlFor="nameOnCard">Name on Card *</Label>
                             <Input
                               id="nameOnCard"
                               placeholder="John Doe"
                               value={nameOnCard}
-                              onChange={(e) =>
-                                setNameOnCard(e.target.value)
-                              }
+                              onChange={(e) => setNameOnCard(e.target.value)}
                               className="mt-1"
                               required
                             />
@@ -562,9 +536,7 @@ export default function NewSubscriptionPage() {
                           disabled={loading}
                           size="lg"
                         >
-                          {loading
-                            ? "Processing..."
-                            : "Complete Subscription"}
+                          {loading ? "Processing..." : "Complete Subscription"}
                         </Button>
                       </div>
                     </CardContent>
@@ -582,9 +554,7 @@ export default function NewSubscriptionPage() {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Plan Type</span>
                           <span className="font-medium">
-                            {frequency === "monthly"
-                              ? "Monthly"
-                              : "Annual"}
+                            {frequency === "monthly" ? "Monthly" : "Annual"}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -601,9 +571,7 @@ export default function NewSubscriptionPage() {
                               ${selectedPrice.toFixed(2)}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {frequency === "monthly"
-                                ? "/month"
-                                : "/year"}
+                              {frequency === "monthly" ? "/month" : "/year"}
                             </div>
                           </div>
                         </div>
@@ -637,9 +605,7 @@ export default function NewSubscriptionPage() {
                 </p>
                 <p className="font-medium text-lg mb-8">
                   Order Number:{" "}
-                  <span className="text-emerald-700">
-                    {orderNumber}
-                  </span>
+                  <span className="text-emerald-700">{orderNumber}</span>
                 </p>
                 <div className="space-y-3">
                   <Button

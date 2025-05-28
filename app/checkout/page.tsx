@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteHeader } from "@/components/site-header";
 import { useCart } from "@/lib/cartContext";
 import { useRouter } from "next/navigation";
+import { useTimezone } from "@/hooks/useTimezone";
 import {
   createAddress,
   AddressInput,
@@ -22,7 +23,7 @@ import {
   SubscriptionInput,
 } from "@/api/routes/commerce";
 import { createPaymentWithAuth, PaymentInput } from "@/api/routes/commerce";
-import { getBogotaDate } from "@/lib/date-utils";
+import { getCurrentDate } from "@/lib/date-utils";
 
 type Step = "shipping" | "payment" | "confirmation";
 
@@ -36,6 +37,7 @@ export default function CheckoutPage() {
   >("credit-card");
   const [loading, setLoading] = useState(false);
   const [lastPlanType, setLastPlanType] = useState<string | null>(null);
+  const { timezone } = useTimezone();
 
   // Address info state
   const [addressInfo, setAddressInfo] = useState<AddressInput>({
@@ -111,16 +113,18 @@ export default function CheckoutPage() {
 
       // 3) Por cada ítem: crear suscripción, envío y pago
       for (const item of cartItems) {
-        // 3a) Crear suscripción
+        // 3a) Crear suscripción con timezone del usuario
         console.log(
           "DEBUG: Creating subscription with start_date:",
-          getBogotaDate()
+          getCurrentDate(timezone)
         );
+        console.log("DEBUG: User timezone:", timezone);
         const subscriptionId = await createSubscriptionWithAuth({
           address_id: addressId,
           plan_type: item.type,
           product_type:
             productTypeMap[item.name as keyof typeof productTypeMap],
+          timezone: timezone,
         });
 
         // 3b) Agendar envío
@@ -130,13 +134,10 @@ export default function CheckoutPage() {
           tracking_number: num,
         } as ShippingInput);
 
-        // 3c) Registrar el pago
-        const paymentDate = getBogotaDate();
+        // 3c) Registrar el pago con timezone del usuario
+        const paymentDate = getCurrentDate(timezone);
         console.log("DEBUG: Creating payment with date:", paymentDate);
-        console.log(
-          "DEBUG: Current time in Bogotá:",
-          new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
-        );
+        console.log("DEBUG: User timezone:", timezone);
 
         await createPaymentWithAuth({
           subscription_id: subscriptionId,
@@ -144,6 +145,7 @@ export default function CheckoutPage() {
           status: "SUCCESS",
           transaction_id: num,
           payment_date: paymentDate,
+          timezone: timezone,
         });
       }
 

@@ -1,8 +1,10 @@
-export type ProductId = 'vision' | 'neuro' | 'fortify' | 'complete';
-export type ProductCategory = 'Supplements' | 'Bundles';
-export type SubscriptionFrequency = 'Monthly Subscription' | 'Annual Subscription';
+export type ProductId = "vision" | "neuro" | "fortify" | "complete";
+export type ProductCategory = "Supplements" | "Bundles";
+export type SubscriptionFrequency =
+  | "Monthly Subscription"
+  | "Annual Subscription";
 
-export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
+export type SubscriptionStatus = "active" | "paused" | "canceled";
 
 export type UserAccount = {
   id: string; // UUID from Supabase Auth
@@ -10,6 +12,7 @@ export type UserAccount = {
   address_id?: number;
   is_admin: boolean;
   email: string;
+  timezone?: string; // User's timezone (e.g., "America/New_York")
   created_at: string;
   last_sign_in_at: string;
 };
@@ -92,7 +95,7 @@ export type Shipping = {
   created_at: string;
 };
 
-export type CampaignStatus = 'Active' | 'Scheduled' | 'Completed';
+export type CampaignStatus = "Active" | "Scheduled" | "Completed";
 
 export interface Campaign {
   id: number;

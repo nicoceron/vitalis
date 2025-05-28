@@ -109,8 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: authUser.id,
         name:
           userAccount.full_name ||
+          (userAccount.first_name && userAccount.last_name
+            ? `${userAccount.first_name} ${userAccount.last_name}`.trim()
+            : userAccount.first_name || userAccount.last_name || "") ||
           authUser.user_metadata.full_name ||
-          authUser.user_metadata.name,
+          authUser.user_metadata.name ||
+          "",
         email:
           authUser.email ||
           authUser.user_metadata.email ||

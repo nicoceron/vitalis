@@ -1,13 +1,41 @@
-// Date utilities for consistent timezone handling in Bogotá, Colombia
+// Date utilities for timezone-aware date handling
+
+/**
+ * Get the current date in the user's timezone in YYYY-MM-DD format
+ * Falls back to Bogotá timezone if no timezone is provided
+ */
+export function getCurrentDate(timezone?: string): string {
+  const userTimezone =
+    timezone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone ||
+    "America/Bogota";
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: userTimezone,
+  });
+}
 
 /**
  * Get the current date in Bogotá, Colombia timezone in YYYY-MM-DD format
- * This ensures all dates are consistent with the local timezone
+ * @deprecated Use getCurrentDate() instead for better timezone support
  */
 export function getBogotaDate(): string {
   return new Date().toLocaleDateString("en-CA", {
     timeZone: "America/Bogota",
   });
+}
+
+/**
+ * Get the user's current timezone
+ */
+export function getUserTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (error) {
+    console.warn(
+      "Could not detect user timezone, falling back to America/Bogota"
+    );
+    return "America/Bogota";
+  }
 }
 
 /**
