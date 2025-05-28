@@ -25,6 +25,7 @@ import {
 import { getAllProducts } from "@/api/routes/commerce";
 import { supabase } from "@/api/apiClient";
 import type { Product, ProductId } from "@/lib/types";
+import { formatDisplayDate } from "@/lib/date-utils";
 
 type Subscription = {
   id: number;
@@ -108,13 +109,6 @@ export default function SubscriptionsPage() {
       : product.price;
   }
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "active":
@@ -172,7 +166,7 @@ export default function SubscriptionsPage() {
               <CalendarIcon className="mx-auto text-emerald-700 h-10 w-10" />
               <h3 className="text-lg mt-4">No Monthly Subscriptions</h3>
               <p className="text-gray-500 mt-2">
-                You haven’t added any subscriptions yet.
+                You haven't added any subscriptions yet.
               </p>
               <Button
                 className="mt-4 bg-emerald-700 hover:bg-emerald-800"
@@ -216,7 +210,9 @@ export default function SubscriptionsPage() {
                           <div className="text-gray-500">Next billing date</div>
                           <div className="font-medium flex items-center gap-1 mt-1">
                             <CalendarIcon className="h-4 w-4 text-emerald-700" />
-                            {formatDate(subscription.next_payment_due_date)}
+                            {formatDisplayDate(
+                              subscription.next_payment_due_date
+                            )}
                           </div>
                         </div>
                         <div>

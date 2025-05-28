@@ -1,5 +1,6 @@
 import { supabase } from "../apiClient";
 import type { Product, ProductId, Payment, Subscription } from "@/lib/types";
+import { getBogotaDate, addMonthsToDate } from "@/lib/date-utils";
 
 // Product types and functions
 export type ProductCreateInput = Omit<Product, "id">;
@@ -179,12 +180,17 @@ export async function createPaymentWithAuth(
   if (authErr) throw new Error(`Auth error: ${authErr.message}`);
   if (!user) throw new Error("Usuario no autenticado");
 
+  const finalPaymentDate = input.payment_date ?? getBogotaDate();
+  console.log("DEBUG API: Creating payment with date:", finalPaymentDate);
+  console.log("DEBUG API: Input payment_date:", input.payment_date);
+  console.log("DEBUG API: getBogotaDate():", getBogotaDate());
+
   // 2) Inserta el registro
   const { data, error } = await supabase
     .from("payment")
     .insert({
       subscription_id: input.subscription_id,
-      payment_date: input.payment_date ?? new Date().toISOString().slice(0, 10),
+      payment_date: finalPaymentDate,
       amount: input.amount,
       status: (input.status ?? "SUCCESS").toUpperCase(),
       transaction_id: input.transaction_id ?? "",
@@ -276,9 +282,24 @@ export async function createSubscription(
   subscriptionData: SubscriptionCreateInput
 ) {
   try {
+    // Calculate next payment due date if not provided
+    let dataToInsert = { ...subscriptionData };
+    if (
+      !dataToInsert.next_payment_due_date &&
+      dataToInsert.start_date &&
+      dataToInsert.plan_type
+    ) {
+      const monthsToAdd =
+        dataToInsert.plan_type === "Annual Subscription" ? 12 : 1;
+      dataToInsert.next_payment_due_date = addMonthsToDate(
+        dataToInsert.start_date,
+        monthsToAdd
+      );
+    }
+
     const { data, error } = await supabase
       .from("subscription")
-      .insert([subscriptionData])
+      .insert([dataToInsert])
       .select()
       .single();
 
@@ -370,13 +391,23 @@ export async function createSubscriptionWithAuth(input: SubscriptionInput) {
   if (authErr) throw new Error(`Auth error: ${authErr.message}`);
   if (!user) throw new Error("Usuario no autenticado");
 
+  const startDate = getBogotaDate();
+  console.log("DEBUG API: Creating subscription with start_date:", startDate);
+  console.log("DEBUG API: getBogotaDate():", getBogotaDate());
+
+  // Calculate next payment due date based on plan type
+  const monthsToAdd = input.plan_type === "Annual Subscription" ? 12 : 1;
+  const nextPaymentDueDate = addMonthsToDate(startDate, monthsToAdd);
+  console.log("DEBUG API: Next payment due date:", nextPaymentDueDate);
+
   // 2) Insertar en `subscription`
   const { data, error } = await supabase
     .from("subscription")
     .insert({
       user_id: user.id,
       address_id: input.address_id,
-      start_date: new Date().toISOString().slice(0, 10),
+      start_date: startDate,
+      next_payment_due_date: nextPaymentDueDate,
       status: "ACTIVE",
       plan_type: input.plan_type,
       product_type: input.product_type,

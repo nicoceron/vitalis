@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CalendarIcon, Package, User, Instagram } from "lucide-react";
+import { formatDisplayDate } from "@/lib/date-utils";
 
 export default function AccountPage() {
   const { user, isLoading, subscriptions } = useAuth();
@@ -37,14 +38,6 @@ export default function AccountPage() {
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -165,7 +158,9 @@ export default function AccountPage() {
                             </p>
                             <p className="text-sm text-gray-500">
                               Next billing:{" "}
-                              {formatDate(subscription.next_payment_due_date)}
+                              {formatDisplayDate(
+                                subscription.next_payment_due_date
+                              )}
                             </p>
                           </div>
                         </div>

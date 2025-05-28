@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { getAllProducts } from "@/api/routes/commerce";
 import type { Product, ProductId } from "@/lib/types";
+import { formatDisplayDate } from "@/lib/date-utils";
 
 export default function OrdersPage() {
   const { user, isLoading, subscriptions } = useAuth();
@@ -58,15 +59,6 @@ export default function OrdersPage() {
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   const getPaymentStatusBadge = (status: string) => {
     if (!status) return null;
@@ -151,7 +143,7 @@ export default function OrdersPage() {
                               : `One-time purchase #${sub.id}`}
                           </CardTitle>
                           <CardDescription>
-                            Purchased on {formatDate(sub.start_date)}
+                            Purchased on {formatDisplayDate(sub.start_date)}
                           </CardDescription>
                         </div>
                         <div className="flex items-center gap-4">
@@ -189,7 +181,9 @@ export default function OrdersPage() {
                                   {latestPayment.status.toUpperCase()}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {formatDate(latestPayment.payment_date)}
+                                  {formatDisplayDate(
+                                    latestPayment.payment_date
+                                  )}
                                 </div>
                               </>
                             )}

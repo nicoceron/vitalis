@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Package, ShoppingBag, Box, ShoppingCart } from "lucide-react";
 import { supabase } from "@/api/apiClient";
+import { formatDisplayDate } from "@/lib/date-utils";
 
 type Payment = {
   id: number;
@@ -89,15 +90,6 @@ export default function PaymentsPage() {
         setLoading(false);
       });
   }, [userId]);
-
-  const formatDate = (d: string) => {
-    if (!d) return "N/A";
-    return new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   const getPaymentStatusBadge = (status: string) => {
     if (!status) return null;
@@ -189,7 +181,7 @@ export default function PaymentsPage() {
                               : `One-time purchase #${sub.id}`}
                           </CardTitle>
                           <CardDescription>
-                            Purchased on {formatDate(sub.start_date)}
+                            Purchased on {formatDisplayDate(sub.start_date)}
                           </CardDescription>
                         </div>
                         <div className="flex items-center gap-4">
@@ -224,7 +216,9 @@ export default function PaymentsPage() {
                                   {sub.payment[0].status.toUpperCase()}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {formatDate(sub.payment[0].payment_date)}
+                                  {formatDisplayDate(
+                                    sub.payment[0].payment_date
+                                  )}
                                 </div>
                               </>
                             )}

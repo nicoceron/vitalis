@@ -22,6 +22,7 @@ import {
   SubscriptionInput,
 } from "@/api/routes/commerce";
 import { createPaymentWithAuth, PaymentInput } from "@/api/routes/commerce";
+import { getBogotaDate } from "@/lib/date-utils";
 
 type Step = "shipping" | "payment" | "confirmation";
 
@@ -111,6 +112,10 @@ export default function CheckoutPage() {
       // 3) Por cada ítem: crear suscripción, envío y pago
       for (const item of cartItems) {
         // 3a) Crear suscripción
+        console.log(
+          "DEBUG: Creating subscription with start_date:",
+          getBogotaDate()
+        );
         const subscriptionId = await createSubscriptionWithAuth({
           address_id: addressId,
           plan_type: item.type,
@@ -126,11 +131,19 @@ export default function CheckoutPage() {
         } as ShippingInput);
 
         // 3c) Registrar el pago
+        const paymentDate = getBogotaDate();
+        console.log("DEBUG: Creating payment with date:", paymentDate);
+        console.log(
+          "DEBUG: Current time in Bogotá:",
+          new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
+        );
+
         await createPaymentWithAuth({
           subscription_id: subscriptionId,
           amount: item.price * item.quantity,
           status: "SUCCESS",
           transaction_id: num,
+          payment_date: paymentDate,
         });
       }
 
